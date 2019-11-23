@@ -27,6 +27,14 @@ data['people'].append({
    'name': 'QCD_Flat_Pt-15to7000_noPU',
    'das': '/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/PhaseIISpr18AODMiniAOD-noPU_93X_upgrade2023_realistic_v5-v1/MINIAODSIM',
 })
+data['people'].append({
+   'name': 'GluGluHToTauTau_RunII',
+   'das': '/GluGluHToTauTau_M125_13TeV_powheg_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v2/MINIAODSIM'
+})
+data['people'].append({
+   'name': 'QCD_Pt-15to7000_TuneCP5_Flat_RunII',
+   'das': '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v1/MINIAODSIM'
+})
 
 with open('mcSamples.json', 'w') as outfile:
    json.dump(data, outfile)

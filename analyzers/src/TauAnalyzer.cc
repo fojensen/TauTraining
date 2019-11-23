@@ -189,11 +189,12 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       dxy_Sig = i->dxy_Sig();
       ip3d = i->ip3d();
       ip3d_Sig = i->ip3d_Sig();
-      hasSecondaryVertex = i->hasSecondaryVertex();
       ecalEnergy = i->ecalEnergy();
       hcalEnergy = i->hcalEnergy();
       flightLength = sqrt(i->flightLength().Mag2());
       flightLengthSig = i->flightLengthSig();
+
+      hasSecondaryVertex = i->hasSecondaryVertex();
 
       //veto_e = i->tauID("againstElectronVLooseMVA6");
       //veto_mu = i->tauID("againstMuonLoose3");

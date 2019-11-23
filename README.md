@@ -3,7 +3,7 @@
 Code for TMVA tau ID training on Phase 2 simulation.
 
 ### References:
-[Reconstruction and identification of tau lepton decays to hadrons and tau neutrino at CMS](https://arxiv.org/abs/1510.07488)
+[arXiv:1510.07488: Reconstruction and identification of tau lepton decays to hadrons and tau neutrinos at CMS](https://arxiv.org/abs/1510.07488)
 
 ## To install the package:
 
@@ -13,4 +13,8 @@ Code for TMVA tau ID training on Phase 2 simulation.
 * `cd CMSSW_10_2_16/src/`
 * `cmsenv`
 * `git cms-merge-topic -u cms-tau-pog:CMSSW_10_2_X_tau-pog_DeepTau2017v2p1_nanoAOD`
-* `scram b -j 4.
+* `scram b -j 4`
+
+### Clone the repository
+`git clone https://github.com/fojensen/TauTraining`
+`scram build`
