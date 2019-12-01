@@ -43,5 +43,5 @@ Code for TMVA tau ID training on Phase 2 simulation.
 `root plotTrainingPerformance.c+`
 
 ### plot reference performance
-`root .c+`
+`root plotReferencePerformance.c+`
 

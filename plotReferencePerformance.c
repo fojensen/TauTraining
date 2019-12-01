@@ -7,8 +7,9 @@
 #include <TChain.h>
 #include <TLegend.h>
 
-TGraphErrors * runPoint(const TString bkgfile, const TString tagger)
+TGraphErrors * runPoint(const TString tagger)
 {
+   std::cout << "Running " << tagger << std::endl;
    int nwp_ = 1;
    if (tagger=="run2017v2") {
       nwp_ = 8;
@@ -18,10 +19,10 @@ TGraphErrors * runPoint(const TString bkgfile, const TString tagger)
    const int nwp = nwp_;
 
    TChain *c_sig = new TChain("skimmedTree");
-   c_sig->Add("./mcsamples/skim_GluGluHToTauTau_PU200.root");
+   c_sig->Add("./outputData/skim_GluGluHToTauTau_PU200.root");
 
    TChain *c_bkg =  new TChain("skimmedTree");
-   c_bkg->Add(bkgfile);
+   c_bkg->Add("./outputData/skim_QCD_Flat_Pt-15to7000_PU200.root");
 
    double x[nwp], y[nwp];
    double xerr[nwp], yerr[nwp];
@@ -48,8 +49,9 @@ TGraphErrors * runPoint(const TString bkgfile, const TString tagger)
       yerr[i] = y[i]*(1.-y[i])/denom_bkg;
       yerr[i] = sqrt(yerr[i]);
       
-      std::cout << "x: " << x[i] << " +- " << xerr[i] << std::endl;
-      std::cout << "y: " << y[i] << " +- " << yerr[i] << std::endl;
+      std::cout << "wp " << i << std::endl;
+      std::cout << "   x: " << x[i] << " +- " << xerr[i] << std::endl;
+      std::cout << "   y: " << y[i] << " +- " << yerr[i] << std::endl;
    }
 
    TGraphErrors * g = new TGraphErrors(nwp, x, y, xerr, yerr);
@@ -61,10 +63,10 @@ TGraphErrors * runPoint(const TString bkgfile, const TString tagger)
    return g; 
 }
 
-void roc()
+void plotROC()
 {
-   TGraphErrors * g_run2017v2 = runPoint("./mcsamples/skim_QCD_Flat_Pt-15to7000_PU200.root", "run2017v2");
-   TGraphErrors * g_deepTau2017v2p1 = runPoint("./mcsamples/skim_QCD_Flat_Pt-15to7000_PU200.root", "deepTau2017v2p1");
+   TGraphErrors * g_run2017v2 = runPoint("run2017v2");
+   TGraphErrors * g_deepTau2017v2p1 = runPoint("deepTau2017v2p1");
 
    TCanvas * c = new TCanvas("c", "", 400, 400);
 
@@ -90,5 +92,11 @@ void roc()
    l->Draw();
    
    c->SetLogy();
+
+   c->SaveAs("./plots/referenceroc.pdf");
 }
 
+void plotReferencePerformance()
+{
+   plotROC();
+}

@@ -203,8 +203,8 @@ void plotEff(const TString var)
    TLegend * l = new TLegend(0.4, 0.2, 0.8, 0.4);
    l->SetBorderSize(0);
    l->SetNColumns(2);
-   l->AddEntry(g_sig_loose, "sig loose", "P");
-   l->AddEntry(g_sig_tight, "sig tight", "P");
+   l->AddEntry(g_sig_loose, "sig 90%", "P");
+   l->AddEntry(g_sig_tight, "sig 40%", "P");
    l->AddEntry(g_bkg_loose, "bkg loose", "P");
    l->AddEntry(g_bkg_tight, "bkg tight", "P");
    l->Draw();
