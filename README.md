@@ -8,12 +8,12 @@ Code for TMVA tau ID training on Phase 2 simulation.
 
 
 ### Install stuff to calculate DeepTauv2p1
-`https://twiki.cern.ch/CMSPublic/SWGuidePFTauID#Running_of_the_DeepTauIDs_ver_20` 
-`cmsrel CMSSW_10_2_16`
-`cd CMSSW_10_2_16/src/`
-`cmsenv`
-`git cms-merge-topic -u cms-tau-pog:CMSSW_10_2_X_tau-pog_DeepTau2017v2p1_nanoAOD`
-`scram b -j 4`
+`https://twiki.cern.ch/CMSPublic/SWGuidePFTauID#Running_of_the_DeepTauIDs_ver_20`  
+`cmsrel CMSSW_10_2_16`  
+`cd CMSSW_10_2_16/src/`  
+`cmsenv`  
+`git cms-merge-topic -u cms-tau-pog:CMSSW_10_2_X_tau-pog_DeepTau2017v2p1_nanoAOD`  
+`scram b -j 4`  
 
 ### Clone the repository
 `git clone https://github.com/fojensen/TauTraining`  
@@ -39,4 +39,9 @@ Code for TMVA tau ID training on Phase 2 simulation.
 ### run the training
 `root runTraining.c+`
 
+### plot training performance
+`root plotTrainingPerformance.c+`
+
+### plot reference performance
+`root .c+`
 

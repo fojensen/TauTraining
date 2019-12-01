@@ -5,14 +5,16 @@
 
 void runTraining()
 {
-   TFile* outputFile = TFile::Open("TMVA.GluGluHToTauTau_PU200.root", "RECREATE");
+   TFile* outputFile = TFile::Open("TMVA.root", "RECREATE");
    const TString theJobName = "MVAAnalysis";
    //const TString theOption_1 = "";
-   const TString theOption_1 = "V=True:Color=True:Transformations=I;D;P;U;G;D:Silent=False:DrawProgressBar=True:AnalysisType=Classification";
+   const TString theOption_1 = 
+      "V=True:Color=True:Transformations=I:Silent=False:DrawProgressBar=True:AnalysisType=Classification"
+   ;
    TMVA::Factory *factory = new TMVA::Factory(theJobName, outputFile, theOption_1);
 
-   TFile *input_sig = TFile::Open("./mcsamples/skim_GluGluHToTauTau_PU200.root");
-   TFile *input_bkg = TFile::Open("./mcsamples/skim_QCD_Flat_Pt-15to7000_PU200.root");
+   TFile *input_sig = TFile::Open("./outputData/skim_GluGluHToTauTau_PU200.root");
+   TFile *input_bkg = TFile::Open("./outputData/skim_QCD_Flat_Pt-15to7000_PU200.root");
 
    TMVA::DataLoader loader("dataset");
  
@@ -25,10 +27,12 @@ void runTraining()
    loader.AddVariable("hasSecondaryVertex");
    loader.AddVariable("hasSecondaryVertex? TMath::Sqrt(TMath::Abs(flightLength)) : -0.25");
    loader.AddVariable("hasSecondaryVertex? TMath::Abs(flightLengthSig): -0.25");
+   loader.AddVariable("puCorrPtSum");
+
    //loader.AddVariable("pt");
    loader.AddSpectator("pt");
    loader.AddVariable("TMath::Abs(eta)");
-   loader.AddVariable("puCorrPtSum");
+   loader.AddSpectator("eta");
 
    // Run 2
    loader.AddVariable("photonPtSumOutsideSignalCone"); 
@@ -49,7 +53,9 @@ void runTraining()
    loader.SetWeightExpression("ptweight", "Background");
 
    //const TString splitOpt = "";
-   const TString splitOpt = "";
+   const TString splitOpt = 
+      "SplitMode=Random:MixMode=SameAsSplitMode:SplitSeed=100:NormMode=EqualNumEvents:nTrain_signal=10000:nTest_signal=10000:nTrain_Background=10000:nTest_Background=10000:V=True:VerboseLevel=Debug"
+   ;
    loader.PrepareTrainingAndTestTree("", "", splitOpt);
  
    const TString methodTitle = "BDT";
