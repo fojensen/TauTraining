@@ -2,13 +2,13 @@
 #include <TTree.h>
 #include "TMVA/Factory.h"
 #include "TMVA/DataLoader.h"
-#include <math.h>
 
 void runTraining()
 {
    TFile* outputFile = TFile::Open("TMVA.GluGluHToTauTau_PU200.root", "RECREATE");
    const TString theJobName = "MVAAnalysis";
-   const TString theOption_1 = "";
+   //const TString theOption_1 = "";
+   const TString theOption_1 = "V=True:Color=True:Transformations=I;D;P;U;G;D:Silent=False:DrawProgressBar=True:AnalysisType=Classification";
    TMVA::Factory *factory = new TMVA::Factory(theJobName, outputFile, theOption_1);
 
    TFile *input_sig = TFile::Open("./mcsamples/skim_GluGluHToTauTau_PU200.root");
@@ -21,7 +21,7 @@ void runTraining()
    loader.AddVariable("neutralIsoPtSum");
    loader.AddVariable("decayMode");
    loader.AddVariable("TMath::Sqrt(TMath::Abs(leadChargedHadrCand_dxy))");
-   loader.AddVariable("TMath::Abs(leadChargedHadrCand_dxysig)");
+   loader.AddVariable("TMath::Abs(leadChargedHadrCand_dxysig");
    loader.AddVariable("hasSecondaryVertex");
    loader.AddVariable("hasSecondaryVertex? TMath::Sqrt(TMath::Abs(flightLength)) : -0.25");
    loader.AddVariable("hasSecondaryVertex? TMath::Abs(flightLengthSig): -0.25");
@@ -48,6 +48,7 @@ void runTraining()
 
    loader.SetWeightExpression("ptweight", "Background");
 
+   //const TString splitOpt = "";
    const TString splitOpt = "";
    loader.PrepareTrainingAndTestTree("", "", splitOpt);
  
@@ -63,3 +64,4 @@ void runTraining()
 
    delete factory;
 }
+
