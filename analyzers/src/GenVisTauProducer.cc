@@ -11,9 +11,9 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/Math/interface/LorentzVector.h"
 typedef math::PtEtaPhiMLorentzVectorD PolarLorentzVector;
-#include <TTree.h>
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "CommonTools/UtilAlgos/interface/TFileService.h"
+//#include <TTree.h>
+//#include "FWCore/ServiceRegistry/interface/Service.h"
+//#include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
 class GenVisTauProducer : public edm::EDProducer {
@@ -22,7 +22,7 @@ public:
 private:
    void produce(edm::Event&, const edm::EventSetup&) override;
    edm::EDGetTokenT<std::vector<reco::GenParticle>> genParticleTok_;
-   TTree * tree;
+ /*  TTree * tree;
    double leadvis_pt, leadvis_eta, leadvis_phi, leadvis_mass;
    double leadinv_pt, leadinv_eta, leadinv_phi, leadinv_mass;
    double sublvis_pt, sublvis_eta, sublvis_phi, sublvis_mass;
@@ -34,7 +34,7 @@ private:
    double vismass, mass;
    double visvisdr, leadvisphotondr, subleadvisphotondr;
    //signal
-   double leadphotondr, subleadphotondr;
+   double leadphotondr, subleadphotondr;*/
 };
 
 GenVisTauProducer::GenVisTauProducer(const edm::ParameterSet& iConfig)
@@ -44,7 +44,7 @@ GenVisTauProducer::GenVisTauProducer(const edm::ParameterSet& iConfig)
    produces<pat::CompositeCandidateCollection>("genVisTaus");
    produces<pat::CompositeCandidateCollection>("genInvTaus");
 
-   edm::Service<TFileService> fs;
+ /*  edm::Service<TFileService> fs;
    tree = fs->make<TTree>("tree", "tree");
    // lead (visible) daughter
    tree->Branch("leadvis_pt", &leadvis_pt, "leadvis_pt/D");
@@ -76,7 +76,7 @@ GenVisTauProducer::GenVisTauProducer(const edm::ParameterSet& iConfig)
    // photon
    tree->Branch("photon_pt", &photon_pt, "photon_pt/D");
    tree->Branch("photon_eta", &photon_eta, "photon_eta/D");
-   tree->Branch("photon_phi", &photon_phi, "photon_phi/D");
+   tree->Branch("photon_phi", &photon_phi, "photon_phi/D");*/
 }
 
 void GenVisTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -111,7 +111,7 @@ void GenVisTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
       }
    }*/
 
-   invMinus_n = visMinus_n = invPlus_n = visPlus_n = 0;
+ //  invMinus_n = visMinus_n = invPlus_n = visPlus_n = 0;
    for (auto i = genParticles->begin(); i != genParticles->end(); ++i) {
       const int id = std::abs(i->pdgId());
       bool goodid = id==12||id==14||id==16||id==11||id==13||id==22||id==211||id==111||id==321;
@@ -122,11 +122,11 @@ void GenVisTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
                if (id==12||id==14||id==16) {
                   invMinus.addDaughter(*i);
                   invMinus_ += i->polarP4();
-                  ++invMinus_n;
+               //   ++invMinus_n;
                } else {
                   visMinus.addDaughter(*i);
                   visMinus_ += i->polarP4();
-                  ++visMinus_n;
+                 // ++visMinus_n;
                }
                if (id==11) eleMinus=true;
                if (id==13) muoMinus=true;
@@ -135,11 +135,11 @@ void GenVisTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
                if (id==12||id==14||id==16) {
                   invPlus.addDaughter(*i);
                   visPlus_ += i->polarP4();
-                  ++invPlus_n;
+             //     ++invPlus_n;
                } else {
                   visPlus.addDaughter(*i);
                   visPlus_ += i->polarP4();
-                  ++visPlus_n;
+               //   ++visPlus_n;
                }
                if (id==11) elePlus=true;
                if (id==13) muoPlus=true;
@@ -190,18 +190,18 @@ void GenVisTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
       invPlus.setPdgId(15); 
   }
 
-   mass =    (visPlus_+visMinus_+invPlus_+invMinus_).mass();
-   vismass = (visPlus_+visMinus_).mass();
+//   mass =    (visPlus_+visMinus_+invPlus_+invMinus_).mass();
+  // vismass = (visPlus_+visMinus_).mass();
 
    auto genVisTaus = std::make_unique<pat::CompositeCandidateCollection>();
    auto genInvTaus = std::make_unique<pat::CompositeCandidateCollection>(); 
 
-   const PolarLorentzVector photon(photon_pt, photon_eta, photon_phi, 0.);
+//   const PolarLorentzVector photon(photon_pt, photon_eta, photon_phi, 0.);
 
    // tau : electron : muon   
    if (visPlus.pt()>=visMinus.pt()) {
 
-      leadvis_pt = visPlus.pt();
+ /*     leadvis_pt = visPlus.pt();
       leadvis_eta = visPlus.eta();
       leadvis_phi = visPlus.phi();
       leadvis_pdgid = visPlus.pdgId();
@@ -218,14 +218,14 @@ void GenVisTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
       sublinv_phi = invMinus.phi();
 
       leadvisphotondr = reco::deltaR(visPlus, photon);
-      subleadvisphotondr = reco::deltaR(visMinus, photon);
+      subleadvisphotondr = reco::deltaR(visMinus, photon);*/
 
       genVisTaus->push_back(visPlus);
       genVisTaus->push_back(visMinus);
       genInvTaus->push_back(invPlus);
       genInvTaus->push_back(invMinus);
    } else {
-      leadvis_pt = visMinus.pt();
+/*      leadvis_pt = visMinus.pt();
       leadvis_eta = visMinus.eta();
       leadvis_phi = visMinus.phi();
       leadvis_pdgid = visMinus.pdgId();
@@ -242,7 +242,7 @@ void GenVisTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
       sublinv_phi = invPlus.phi();
 
       leadvisphotondr = reco::deltaR(visMinus, photon);
-      subleadvisphotondr = reco::deltaR(visPlus, photon);
+      subleadvisphotondr = reco::deltaR(visPlus, photon);*/
 
       genVisTaus->push_back(visMinus);
       genVisTaus->push_back(visPlus);

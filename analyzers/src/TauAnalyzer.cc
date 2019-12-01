@@ -13,6 +13,7 @@
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
+#include "DataFormats/Math/interface/deltaR.h"
 //#include "TRandom3.h"
 
 class TauAnalyzer : public edm::EDAnalyzer {
@@ -60,7 +61,14 @@ private:
    float drmin_tau_tau;
    float flightLengthSig;
    float flightLength;
-   
+
+   float sigCands_dr;
+   float sigCands_deta;
+   float sigCands_dphi;
+   float isoCands_dr;
+   float isoCands_deta;
+   float isoCands_dphi;
+    
    //float var1, var2;
    //TRandom3 *r;
    //float varmean;
@@ -96,16 +104,25 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("hasSecondaryVertex", &hasSecondaryVertex, "hasSecondaryVertex/O");
    tree->Branch("hcalEnergy", &hcalEnergy, "hcalEnergy/F");
    tree->Branch("ecalEnergy", &ecalEnergy, "ecalEnergy/F");
-   tree->Branch("iso_run2017v2", iso_run2017v2, "iso_run2017v2[8]/F");
-   tree->Branch("iso_deepTau2017v2p1", iso_deepTau2017v2p1, "iso_deepTau2017v2p1[9]/F");
    tree->Branch("flightLengthSig", &flightLengthSig, "flightLengthSig/F");
    tree->Branch("flightLength", &flightLength, "flightLength/F");
    tree->Branch("leadChargedHadrCand_dxy", &leadChargedHadrCand_dxy, "leadChargedHadrCand_dxy/F");
    tree->Branch("leadChargedHadrCand_dxysig", &leadChargedHadrCand_dxysig, "leadChargedHadrCand_dxysig/F");
+
+   tree->Branch("iso_run2017v2", iso_run2017v2, "iso_run2017v2[8]/F");
+   tree->Branch("iso_deepTau2017v2p1", iso_deepTau2017v2p1, "iso_deepTau2017v2p1[9]/F");
+
    tree->Branch("drmin_jet", &drmin_jet, "drmin_jet/F");   
    tree->Branch("drmin_tau_e", &drmin_tau_e, "drmin_tau_e/F");
    tree->Branch("drmin_tau_mu", &drmin_tau_mu, "drmin_tau_mu/F");
    tree->Branch("drmin_tau_tau", &drmin_tau_tau, "drmin_tau_tau/F");
+
+   tree->Branch("sigCands_dr", &sigCands_dr, "sigCands_dr/F");
+   tree->Branch("sigCands_deta", &sigCands_deta, "sigCands_deta/F");
+   tree->Branch("sigCands_dphi", &sigCands_dphi, "sigCands_dphi/F");
+   tree->Branch("isoCands_dr", &isoCands_dr, "isoCands_dr/F");
+   tree->Branch("isoCands_deta", &isoCands_deta, "isoCands_deta/F");
+   tree->Branch("isoCands_dphi", &isoCands_dphi, "isoCands_dphi/F");
 
    //r = new TRandom3();
    //tree->Branch("var1", &var1, "var1/F");
@@ -171,8 +188,12 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       if (i->leadChargedHadrCand().isNonnull()) {
          if (i->leadChargedHadrCand()->bestTrack()) {
             leadChargedHadrCand_dxy = i->leadChargedHadrCand()->bestTrack()->dxy();
-            leadChargedHadrCand_dxysig = i->leadChargedHadrCand()->bestTrack()->dxyError();
-            leadChargedHadrCand_dxysig = leadChargedHadrCand_dxy / leadChargedHadrCand_dxysig;
+            const float dxyError = i->leadChargedHadrCand()->bestTrack()->dxyError();
+            if (dxyError>0.) {
+               leadChargedHadrCand_dxysig = leadChargedHadrCand_dxy / dxyError;
+            } else {
+               leadChargedHadrCand_dxysig = -8.;
+            }
          }
       }
 
@@ -195,6 +216,46 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       flightLengthSig = i->flightLengthSig();
 
       hasSecondaryVertex = i->hasSecondaryVertex();
+ 
+      float sigCands_pt = 0.;
+      sigCands_dr = sigCands_deta = sigCands_dphi = 0.;
+      for (auto j = i->signalGammaCands().begin(); j < i->signalGammaCands().end(); ++j) {
+         const float dr = reco::deltaR(*i, **j);
+         const float deta = std::abs(i->eta() - (*j)->eta());
+         const float dphi = std::abs(reco::deltaPhi(i->phi(), (*j)->phi()));
+         const float pt_ = (*j)->pt();
+         sigCands_dr += dr * pt_;
+         sigCands_deta += deta * pt_;
+         sigCands_dphi += dphi * pt_;
+         sigCands_pt += pt_;
+      }
+      if (sigCands_pt>0.) {
+         sigCands_dr = sigCands_dr / sigCands_pt;
+         sigCands_deta = sigCands_deta / sigCands_pt;
+         sigCands_dphi = sigCands_dphi / sigCands_pt;
+      } else {
+         sigCands_dr = sigCands_deta = sigCands_dphi = -1.;
+      }
+
+      float isoCands_pt = 0.;
+      isoCands_dr = isoCands_deta = isoCands_dphi = 0.;
+      for (auto j = i->isolationGammaCands().begin(); j < i->isolationGammaCands().end(); ++j) {
+         const float dr = reco::deltaR(*i, **j);
+         const float deta = std::abs(i->eta() - (*j)->eta());
+         const float dphi = std::abs(reco::deltaPhi(i->phi(), (*j)->phi()));
+         const float pt_ = (*j)->pt();
+         isoCands_dr += dr * pt_;
+         isoCands_deta += deta * pt_;
+         isoCands_dphi += dphi * pt_;
+         isoCands_pt += pt_;
+      }
+      if (isoCands_pt>0.) {
+         isoCands_dr = isoCands_dr / isoCands_pt;
+         isoCands_deta = isoCands_deta / isoCands_pt;
+         isoCands_dphi = isoCands_dphi / isoCands_pt;
+      } else {
+         isoCands_dr = isoCands_deta = isoCands_dphi = -1.;
+      }
 
       //veto_e = i->tauID("againstElectronVLooseMVA6");
       //veto_mu = i->tauID("againstMuonLoose3");

@@ -20,7 +20,7 @@ Code for TMVA tau ID training on Phase 2 simulation.
 `scram build`
 
 ### submit crab jobs
-`python mcSamples.py` 
+`python mcSamples.py`  
 `python submitToCrab.py`
 
 ### produce skims
@@ -30,8 +30,8 @@ Code for TMVA tau ID training on Phase 2 simulation.
 `root makeVarPlots.c+`
 
 ### calculate and add pT weights to skims
-`root ptetaweights.c+`
-`root addWeights.c+`
+`root makePtWeights.c+`  
+`root addPtWeights.c+`
 
 ### run the training
 `root runTraining.c+`

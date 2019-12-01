@@ -2,12 +2,19 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("analysis")
 
-#process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-#process.GlobalTag.globaltag = '102X_upgrade2018_realistic_v18'
-#process.load('Configuration.StandardSequences.Services_cff')
-#process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-#process.load('Configuration.StandardSequences.MagneticField_cff')
-#process.load('Geometry.CaloEventSetup.CaloTopology_cfi')
+import FWCore.ParameterSet.VarParsing as VarParsing
+options = VarParsing.VarParsing('analysis')
+options.register('globaltag',
+   "",
+   VarParsing.VarParsing.multiplicity.singleton,
+   VarParsing.VarParsing.varType.string,
+  "conditions"
+)
+options.parseArguments()
+
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
+#process.GlobalTag.globaltag = options.globaltag
+process.GlobalTag.globaltag = "93X_upgrade2023_realistic_v5"
 
 process.genVisTaus = cms.EDProducer("GenVisTauProducer",
    genParticleCollection = cms.InputTag("prunedGenParticles")
@@ -19,21 +26,27 @@ process.genVisTaus = cms.EDProducer("GenVisTauProducer",
 #   filter = cms.bool(False)
 #)
 
-updatedTauName = "slimmedTausNewID" #name of pat::Tau collection with new tau-Ids
+updatedTauName = "slimmedTausNewID"
 import RecoTauTag.RecoTau.tools.runTauIdMVA as tauIdConfig
-tauIdEmbedder = tauIdConfig.TauIDEmbedder(process, cms, debug = False,
-                    updatedTauName = updatedTauName,
-                    toKeep = ["2017v2", "deepTau2017v2p1"])
+tauIdEmbedder = tauIdConfig.TauIDEmbedder(
+   process,
+   cms,
+   debug = False,
+   updatedTauName = updatedTauName,
+   toKeep = ["2017v2", "deepTau2017v2p1"])
 tauIdEmbedder.runTauID()
 
 process.tauAnalyzer = cms.EDAnalyzer("TauAnalyzer",
-   genJetCollection = cms.InputTag("slimmedGenJets"),
    tauCollection = cms.InputTag(updatedTauName),
+   genJetCollection = cms.InputTag("slimmedGenJets"),
    genVisTauCollection = cms.InputTag("genVisTaus:genVisTaus")
 )
 
 process.source = cms.Source("PoolSource",
-   fileNames = cms.untracked.vstring("/store/mc/PhaseIISpr18AODMiniAOD/GluGluHToTauTau_M125_14TeV_powheg_pythia8/MINIAODSIM/PU200_93X_upgrade2023_realistic_v5-v1/20000/02AB313D-AA45-E811-A1B6-7CD30AB15C58.root")
+   fileNames = cms.untracked.vstring(
+      #"/store/mc/PhaseIISpr18AODMiniAOD/GluGluHToTauTau_M125_14TeV_powheg_pythia8/MINIAODSIM/PU200_93X_upgrade2023_realistic_v5-v1/20000/02AB313D-AA45-E811-A1B6-7CD30AB15C58.root"
+      "file:02AB313D-AA45-E811-A1B6-7CD30AB15C58.root"
+   )
 )
 
 process.TFileService = cms.Service("TFileService",
