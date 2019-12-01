@@ -6,7 +6,6 @@ Code for TMVA tau ID training on Phase 2 simulation.
 [arXiv:1510.07488: Reconstruction and identification of tau lepton decays to hadrons and tau neutrinos at CMS](https://arxiv.org/abs/1510.07488)
 [arXiv:1809.02816: Performance of reconstruction and identification of tau leptons decaying to hadrons and tau neutrinos in pp collisions at sqrt(s) = 13 TeV](https://arxiv.org/abs/1809.02816)
 
-## To install the package:
 
 ### Install stuff to calculate DeepTauv2p1
 `https://twiki.cern.ch/CMSPublic/SWGuidePFTauID#Running_of_the_DeepTauIDs_ver_20` 
@@ -21,6 +20,8 @@ Code for TMVA tau ID training on Phase 2 simulation.
 `scram build`
 
 ### submit crab jobs
+`python mcSamples.py` 
+`python submitToCrab.py`
 
 ### produce skims
 `root makeSkim.c+`

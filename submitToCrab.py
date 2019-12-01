@@ -19,14 +19,14 @@ with open(infile) as json_file:
       f.write("\n")
       f.write("config.JobType.pluginName = 'Analysis'\n")
       f.write("config.JobType.psetName = './tauAnalyzer_cfg.py'\n")
-      f.write("config.JobType.pyCfgParams = ['']\n")
+      f.write("config.JobType.pyCfgParams = ['globaltag="+str(p['globaltag'])+"']\n")
       f.write("\n")
       f.write("config.Data.inputDataset = '"+p['das']+"'\n")
       f.write("config.Data.splitting = 'Automatic'\n")
-      f.write("config.Data.outLFNDirBase = '/store/user/fjensen/TauTraining_2/'\n")
+      f.write("config.Data.outLFNDirBase = '/store/user/fjensen/TauTraining_1/'\n")
       f.write("\n")
       f.write("config.Site.storageSite = 'T3_US_FNALLPC'\n")
       f.close()
       # comment the next line for a dry run
-      os.system("crab submit " + f.name)
+      #os.system("crab submit " + f.name)
 
