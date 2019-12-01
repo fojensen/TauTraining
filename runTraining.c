@@ -6,8 +6,8 @@
 
 void runTraining()
 {
-   TFile* outputFile = TFile::Open("TMVA.root", "RECREATE");
-   const TString theJobName = "MVAnalysis";
+   TFile* outputFile = TFile::Open("TMVA.GluGluHToTauTau_PU200.root", "RECREATE");
+   const TString theJobName = "MVAAnalysis";
    const TString theOption_1 = "";
    TMVA::Factory *factory = new TMVA::Factory(theJobName, outputFile, theOption_1);
 
@@ -15,25 +15,38 @@ void runTraining()
    TFile *input_bkg = TFile::Open("./mcsamples/skim_QCD_Flat_Pt-15to7000_PU200.root");
 
    TMVA::DataLoader loader("dataset");
-   
+ 
+   // Run 1
    loader.AddVariable("chargedIsoPtSum");
    loader.AddVariable("neutralIsoPtSum");
-   loader.AddVariable("leadChargedHadrCand_dxy");
-   loader.AddVariable("leadChargedHadrCand_dxysig");
    loader.AddVariable("decayMode");
-   //loader.AddVariable("hasSecondaryVertex");
-   loader.AddVariable("hasSecondaryVertex ? flightLengthSig : -2.");
-   loader.AddVariable("hasSecondaryVertex ? flightLength : -2.");
-   //loader.AddVariable("flightLengthSig")
-   //loader.AddVariable("flightLength");
+   loader.AddVariable("TMath::Sqrt(TMath::Abs(leadChargedHadrCand_dxy))");
+   loader.AddVariable("TMath::Abs(leadChargedHadrCand_dxysig)");
+   loader.AddVariable("hasSecondaryVertex");
+   loader.AddVariable("hasSecondaryVertex? TMath::Sqrt(TMath::Abs(flightLength)) : -0.25");
+   loader.AddVariable("hasSecondaryVertex? TMath::Abs(flightLengthSig): -0.25");
+   //loader.AddVariable("pt");
+   loader.AddSpectator("pt");
+   loader.AddVariable("TMath::Abs(eta)");
    loader.AddVariable("puCorrPtSum");
-   loader.AddVariable("math::log(pt)");
-   loader.AddVariable("std::abs(eta)");
 
+   // Run 2
+   loader.AddVariable("photonPtSumOutsideSignalCone"); 
+   loader.AddVariable("TMath::Sqrt(TMath::Abs(ip3d))");
+   loader.AddVariable("TMath::Abs(ip3d_Sig)");
+   loader.AddVariable("signalGammaCands_size");
+   loader.AddVariable("isolationGammaCands_size"); 
+   loader.AddVariable("signalGammaCands_size? sigCands_dr : -0.25");
+   loader.AddVariable("signalGammaCands_size? sigCands_deta : -0.25");
+   loader.AddVariable("signalGammaCands_size? sigCands_dphi: -0.25");
+   loader.AddVariable("isolationGammaCands_size? isoCands_dr: -0.25");
+   loader.AddVariable("isolationGammaCands_size? isoCands_deta: -0.25");
+   loader.AddVariable("isolationGammaCands_size? isoCands_dphi: -0.25");
+  
    loader.AddSignalTree((TTree*)input_sig->Get("skimmedTree"));
    loader.AddBackgroundTree((TTree*)input_bkg->Get("skimmedTree"));
 
-   //loader.SetWeightExpression("ptweight", "Background");
+   loader.SetWeightExpression("ptweight", "Background");
 
    const TString splitOpt = "";
    loader.PrepareTrainingAndTestTree("", "", splitOpt);
