@@ -5,19 +5,17 @@
 
 void makeSkim(const TString filetag, const bool isSignal)
 {
-   const TCut recocut = "decayModeFinding>0.5 && pt>=20. && pt<220. && std::abs(eta)<3.";
+   const TCut recocut = "decayModeFinding>0.5 && pt>=20. && pt<245. && TMath::Abs(eta)<3.";
    const TCut gencut = "drmin_jet<0.4 && drmin_tau_e>=0.4 && drmin_tau_mu>=0.4";
    TCut cuts = recocut && gencut;
-   if (isSignal) {
-      cuts = cuts && TCut("drmin_tau_tau<0.4");
-   }
-
+   if (isSignal) cuts = cuts && TCut("drmin_tau_tau<0.4");
+ 
    char infile[100];
    sprintf(infile, "./mcsamples/%s.root", filetag.Data());
    TFile * f = TFile::Open(infile);
-   TTree * t = (TTree*)f->Get("skimmedTree");
+   TTree * t = (TTree*)f->Get("tauAnalyzer/tree");
    std::cout << "entries in input tree: " << t->GetEntries() << std::endl;
- 
+    
    char outfile[100];
    sprintf(outfile, "./mcsamples/skim_%s.root", filetag.Data());
    TFile * fnew = new TFile(outfile, "RECREATE");
@@ -26,5 +24,15 @@ void makeSkim(const TString filetag, const bool isSignal)
    f->Close();
    t_slim->Write("skimmedTree");
    fnew->Close();
+
+   /*char outfile[100];
+   sprintf(outfile, "./mcsamples/skim_%s.root", filetag.Data());
+   TFile * fnew = new TFile(outfile, "RECREATE");
+   TTree *t_slim = t->CopyTree(cuts);
+   TTree *t_extraslim = t_slim->CopyTree("", "", 61691);
+   std::cout << "entries in output tree: " << t_extraslim->GetEntries() << std::endl;
+   f->Close();
+   t_extraslim->Write("skimmedTree");
+   fnew->Close();*/
 }
 

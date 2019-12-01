@@ -17,5 +17,22 @@ Code for TMVA tau ID training on Phase 2 simulation.
 * `scram b -j 4`
 
 ### Clone the repository
-`git clone https://github.com/fojensen/TauTraining` 
+`git clone https://github.com/fojensen/TauTraining`  
 `scram build`
+
+### submit crab jobs
+
+### produce skims
+`root makeSkim.c+`
+
+### plot the variables for training
+`root makeVarPlots.c+`
+
+### calculate and add pT weights to skims
+`root ptetaweights.c+`
+`root addWeights.c+`
+
+### run the training
+`root runTraining.c+`
+
+
