@@ -6,7 +6,7 @@
 #include <TTree.h>
 #include <TCut.h>
 
-void addWeights()
+void addPtWeights()
 {
    TFile * f_w = TFile::Open("./ptetaweights.GluGluHToTauTau_PU200.root");
    TH1D * h = (TH1D*)f_w->Get("w_pt");
@@ -17,7 +17,7 @@ void addWeights()
    h_ptweights_temp->SetDirectory(0);
    f_w->Close();
 
-   TFile * f = TFile::Open("./mcsamples/skim_QCD_Flat_Pt-15to7000_PU200.root", "UPDATE");
+   TFile * f = TFile::Open("./outputData/skim_QCD_Flat_Pt-15to7000_PU200.root", "UPDATE");
    TTree * t = (TTree*)f->Get("skimmedTree");
    
    float ptweight = 0.;

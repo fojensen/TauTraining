@@ -20,8 +20,8 @@ void runTraining()
    loader.AddVariable("chargedIsoPtSum");
    loader.AddVariable("neutralIsoPtSum");
    loader.AddVariable("decayMode");
-   loader.AddVariable("TMath::Sqrt(TMath::Abs(leadChargedHadrCand_dxy))");
-   loader.AddVariable("TMath::Abs(leadChargedHadrCand_dxysig");
+   //loader.AddVariable("TMath::Sqrt(TMath::Abs(leadChargedHadrCand_dxy))");
+   //loader.AddVariable("TMath::Abs(leadChargedHadrCand_dxysig");
    loader.AddVariable("hasSecondaryVertex");
    loader.AddVariable("hasSecondaryVertex? TMath::Sqrt(TMath::Abs(flightLength)) : -0.25");
    loader.AddVariable("hasSecondaryVertex? TMath::Abs(flightLengthSig): -0.25");

@@ -6,7 +6,7 @@
 #include <TChain.h>
 #include <TH2D.h>
 
-void ptetaweights(const TString sigTag, const TString bkgTag, const TString saveTag)
+void makePtWeights(const TString sigTag, const TString bkgTag, const TString saveTag)
 {
    const int n = 9;
    const double x[n+1] = {20., 25., 35., 50., 70., 95., 125., 160., 200., 245.};
@@ -23,7 +23,7 @@ void ptetaweights(const TString sigTag, const TString bkgTag, const TString save
 
    TChain * c_sig = new TChain("skimmedTree");
    char infile_sig[100];
-   sprintf(infile_sig, "./mcsamples/skim_%s.root", sigTag.Data());
+   sprintf(infile_sig, "./outputData/skim_%s.root", sigTag.Data());
    c_sig->Add(infile_sig);
    const int n_sig = c_sig->GetEntries();
    std::cout << "number of signal entries: " << n_sig << std::endl;
@@ -37,14 +37,14 @@ void ptetaweights(const TString sigTag, const TString bkgTag, const TString save
   
    TChain * c_bkg = new TChain("skimmedTree");
    char infile_bkg[100];
-   sprintf(infile_bkg, "./mcsamples/skim_%s.root", bkgTag.Data());
+   sprintf(infile_bkg, "./outputData/skim_%s.root", bkgTag.Data());
    c_bkg->Add(infile_bkg);
 
    const int n_bkg = c_bkg->GetEntries();
    std::cout << "number of background entries: " << n_bkg << std::endl;
 
    c_bkg->Project("h_pt_bkg", "pt");
-   //c_bkg->Project("h_pt_bkg", "pt", "ptweight * (1>0)");
+   //c_bkg->Project("h_pt_bkg", "pt", "ptweight * (1>0)"); // test weights
 
    c_bkg->Project("h_eta_bkg", "eta");
    c_bkg->Project("h_pteta_bkg", "pt:std::abs(eta)");
@@ -99,6 +99,7 @@ void ptetaweights(const TString sigTag, const TString bkgTag, const TString save
    w_pt->Draw("PE");
 
    const TString buffer = "./plots/ptweights."+saveTag+".pdf";
+   //const TString buffer = "./plots/ptweights."+saveTag+".closure.pdf"; // test weights
    canvas->SaveAs(buffer);
    
    char outfile[100];
