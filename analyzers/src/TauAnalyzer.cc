@@ -14,7 +14,6 @@
 #include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/Math/interface/deltaR.h"
-//#include "TRandom3.h"
 
 class TauAnalyzer : public edm::EDAnalyzer {
 public:
@@ -37,11 +36,6 @@ private:
    int decayMode;
    int isolationGammaCands_size;
    int signalGammaCands_size;
-   float hcalEnergy;
-   float ecalEnergy;
-   float leadTrack_pt;
-   float dxy;
-   float dxy_Sig; 
    float ip3d;
    float ip3d_Sig;
    bool hasSecondaryVertex;
@@ -49,7 +43,6 @@ private:
    float phi;
    float leadChargedHadrCand_dxy;
    float leadChargedHadrCand_dxysig;
-   float leadNeutralCand_pt;
    float decayModeFinding;
    TString labels_run2017v2[8];
    TString labels_deepTau2017v2p1[9];
@@ -67,11 +60,7 @@ private:
    float sigCands_dphi;
    float isoCands_dr;
    float isoCands_deta;
-   float isoCands_dphi;
-    
-   //float var1, var2;
-   //TRandom3 *r;
-   //float varmean;
+   float isoCands_dphi;    
 };
 
 TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
@@ -80,15 +69,11 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    genJetToken_ = consumes<std::vector<reco::GenJet>>(iConfig.getParameter<edm::InputTag>("genJetCollection"));
    genVisTauToken_ = consumes<pat::CompositeCandidateCollection>(iConfig.getParameter<edm::InputTag>("genVisTauCollection"));
 
-   //varmean = iConfig.getParameter<double>("varmean");
-
    edm::Service<TFileService> fs;
    tree = fs->make<TTree>("tree", "tree");
  
    tree->Branch("pt", &pt, "pt/F");
    tree->Branch("eta", &eta, "eta/F");
-   tree->Branch("phi", &phi, "phi/F");
-   tree->Branch("mass", &mass, "mass/F");   
    tree->Branch("decayModeFinding", &decayModeFinding, "decayModeFinding/F");
    tree->Branch("decayMode", &decayMode, "decayMode/I");  
    tree->Branch("chargedIsoPtSum", &chargedIsoPtSum, "chargedIsoPtSum/F");
@@ -97,13 +82,9 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("photonPtSumOutsideSignalCone", &photonPtSumOutsideSignalCone, "photonPtSumOutsideSignalCone/F");
    tree->Branch("signalGammaCands_size", &signalGammaCands_size, "signalGammaCands_size/I");
    tree->Branch("isolationGammaCands_size", &isolationGammaCands_size, "isolationGammaCands_size/I");
-   tree->Branch("dxy", &dxy, "dxy/F");
-   tree->Branch("dxy_Sig", &dxy_Sig, "dxy_Sig/F");
    tree->Branch("ip3d", &ip3d, "ip3d/F");
    tree->Branch("ip3d_Sig", &ip3d_Sig, "ip3d_Sig/F");
    tree->Branch("hasSecondaryVertex", &hasSecondaryVertex, "hasSecondaryVertex/O");
-   tree->Branch("hcalEnergy", &hcalEnergy, "hcalEnergy/F");
-   tree->Branch("ecalEnergy", &ecalEnergy, "ecalEnergy/F");
    tree->Branch("flightLengthSig", &flightLengthSig, "flightLengthSig/F");
    tree->Branch("flightLength", &flightLength, "flightLength/F");
    tree->Branch("leadChargedHadrCand_dxy", &leadChargedHadrCand_dxy, "leadChargedHadrCand_dxy/F");
@@ -124,10 +105,6 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("isoCands_deta", &isoCands_deta, "isoCands_deta/F");
    tree->Branch("isoCands_dphi", &isoCands_dphi, "isoCands_dphi/F");
 
-   //r = new TRandom3();
-   //tree->Branch("var1", &var1, "var1/F");
-   //tree->Branch("var2", &var2, "var2/F");
-   
    labels_run2017v2[0] = "inclusive";
    labels_run2017v2[1] = "byVVLooseIsolationMVArun2017v2DBoldDMwLT2017";
    labels_run2017v2[2] = "byVLooseIsolationMVArun2017v2DBoldDMwLT2017";
@@ -169,11 +146,6 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       }
       if (drmin_jet>=0.4) continue;
  
-      pt = i->pt();
-      eta = i->eta();
-      decayModeFinding = i->tauID("decayModeFinding");
-      //if (pt<20. || pt>=220. || std::abs(eta)>=3 || !decayModeFinding) continue;
- 
       drmin_tau_e = drmin_tau_mu = drmin_tau_tau = 9.;
       for (auto j = genVisTaus->begin(); j != genVisTaus->end(); ++j) {
          const int id = std::abs(j->pdgId());
@@ -182,23 +154,23 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
          if (id==13 && dr<drmin_tau_mu) drmin_tau_mu = dr;
          if (id==15 && dr<drmin_tau_tau) drmin_tau_tau = dr;
       }
-      //if (drmin_tau_e<0.4 || drmin_tau_mu<0.4) continue;
 
-      leadChargedHadrCand_dxy = leadChargedHadrCand_dxysig = -9.;
+      leadChargedHadrCand_dxy = leadChargedHadrCand_dxysig = -999.;
       if (i->leadChargedHadrCand().isNonnull()) {
          if (i->leadChargedHadrCand()->bestTrack()) {
             leadChargedHadrCand_dxy = i->leadChargedHadrCand()->bestTrack()->dxy();
             const float dxyError = i->leadChargedHadrCand()->bestTrack()->dxyError();
             if (dxyError>0.) {
                leadChargedHadrCand_dxysig = leadChargedHadrCand_dxy / dxyError;
-            } else {
-               leadChargedHadrCand_dxysig = -8.;
             }
          }
       }
+      if (std::isnan(leadChargedHadrCand_dxy)) leadChargedHadrCand_dxy = -998.;
+      if (std::isnan(leadChargedHadrCand_dxysig)) leadChargedHadrCand_dxysig = -998.;
 
-      phi = i->phi();
-      mass = i->mass();
+      pt = i->pt();
+      eta = i->eta();
+      decayModeFinding = i->tauID("decayModeFinding");
       chargedIsoPtSum = i->tauID("chargedIsoPtSum");
       neutralIsoPtSum = i->tauID("neutralIsoPtSum");
       puCorrPtSum = i->tauID("puCorrPtSum"); 
@@ -206,15 +178,10 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       decayMode = i->decayMode();
       signalGammaCands_size = i->signalGammaCands().size();
       isolationGammaCands_size = i->isolationGammaCands().size();
-      dxy = i->dxy();
-      dxy_Sig = i->dxy_Sig();
       ip3d = i->ip3d();
       ip3d_Sig = i->ip3d_Sig();
-      ecalEnergy = i->ecalEnergy();
-      hcalEnergy = i->hcalEnergy();
       flightLength = sqrt(i->flightLength().Mag2());
       flightLengthSig = i->flightLengthSig();
-
       hasSecondaryVertex = i->hasSecondaryVertex();
  
       float sigCands_pt = 0.;
@@ -234,7 +201,7 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
          sigCands_deta = sigCands_deta / sigCands_pt;
          sigCands_dphi = sigCands_dphi / sigCands_pt;
       } else {
-         sigCands_dr = sigCands_deta = sigCands_dphi = -1.;
+         sigCands_dr = sigCands_deta = sigCands_dphi = -999.;
       }
 
       float isoCands_pt = 0.;
@@ -254,11 +221,8 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
          isoCands_deta = isoCands_deta / isoCands_pt;
          isoCands_dphi = isoCands_dphi / isoCands_pt;
       } else {
-         isoCands_dr = isoCands_deta = isoCands_dphi = -1.;
+         isoCands_dr = isoCands_deta = isoCands_dphi = -999.;
       }
-
-      //veto_e = i->tauID("againstElectronVLooseMVA6");
-      //veto_mu = i->tauID("againstMuonLoose3");
 
       for (int j = 0; j < 8; ++j) {
          if (j==0) {
@@ -274,10 +238,7 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
             iso_deepTau2017v2p1[j] = i->tauID(labels_deepTau2017v2p1[j]);
          }  
       }       
-
- //     var1 = r->Gaus(varmean, 1.);
-   //   var2 = r->Gaus(varmean, 2.);
-  
+ 
       tree->Fill();
    }
    
