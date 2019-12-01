@@ -98,12 +98,12 @@ void makePtWeights(const TString sigTag, const TString bkgTag, const TString sav
    w_pt->SetStats(0);
    w_pt->Draw("PE");
 
-   const TString buffer = "./plots/ptweights."+saveTag+".pdf";
+   const TString buffer = "./plots/ptWeights."+saveTag+".pdf";
    //const TString buffer = "./plots/ptweights."+saveTag+".closure.pdf"; // test weights
    canvas->SaveAs(buffer);
    
    char outfile[100];
-   sprintf(outfile, "./ptetaweights.%s.root", saveTag.Data());
+   sprintf(outfile, "./ptWeights.%s.root", saveTag.Data());
    TFile * f = new TFile(outfile, "RECREATE");
    h_pt_sig->Write();
    h_eta_sig->Write();

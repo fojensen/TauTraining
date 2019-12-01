@@ -1,4 +1,3 @@
-//#include <TLine.h>
 #include <TCut.h>
 #include <TCanvas.h>
 #include <iostream>
@@ -7,7 +6,12 @@
 #include <TChain.h>
 #include <TLegend.h>
 
-TGraphErrors * runPoint(const TString tagger)
+void plotEff(const TString var, const TString tagger)
+{
+
+}
+
+TGraphErrors * runPointROC(const TString tagger)
 {
    std::cout << "Running " << tagger << std::endl;
    int nwp_ = 1;
@@ -65,8 +69,8 @@ TGraphErrors * runPoint(const TString tagger)
 
 void plotROC()
 {
-   TGraphErrors * g_run2017v2 = runPoint("run2017v2");
-   TGraphErrors * g_deepTau2017v2p1 = runPoint("deepTau2017v2p1");
+   TGraphErrors * g_run2017v2 = runPointROC("run2017v2");
+   TGraphErrors * g_deepTau2017v2p1 = runPointROC("deepTau2017v2p1");
 
    TCanvas * c = new TCanvas("c", "", 400, 400);
 
@@ -99,4 +103,9 @@ void plotROC()
 void plotReferencePerformance()
 {
    plotROC();
+   plotEff("pt", "run2017v2");
+   plotEff("eta", "run2017v2");
+   plotEff("pt", "deepTau2017v2p1");
+   plotEff("eta", "deepTau2017v2p1");
 }
+

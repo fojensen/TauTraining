@@ -10,7 +10,7 @@ void runTraining()
    //const TString theOption_1 = "";
    const TString theOption_1 = 
       "V=True:Color=True:Transformations=I:Silent=False:DrawProgressBar=True:AnalysisType=Classification"
-   ;
+   ; // Transformations=?
    TMVA::Factory *factory = new TMVA::Factory(theJobName, outputFile, theOption_1);
 
    TFile *input_sig = TFile::Open("./outputData/skim_GluGluHToTauTau_PU200.root");
@@ -59,6 +59,7 @@ void runTraining()
    loader.PrepareTrainingAndTestTree("", "", splitOpt);
  
    const TString methodTitle = "BDT";
+   //const TString theOption_2 = "";
    const TString theOption_2 = "";
    factory->BookMethod(&loader, TMVA::Types::kBDT, methodTitle, theOption_2);
   
