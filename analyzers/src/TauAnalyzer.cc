@@ -39,8 +39,6 @@ private:
    float ip3d;
    float ip3d_Sig;
    bool hasSecondaryVertex;
-   float mass;
-   float phi;
    float leadChargedHadrCand_dxy;
    float leadChargedHadrCand_dxysig;
    float decayModeFinding;
