@@ -6,9 +6,9 @@
 #include <TTree.h>
 #include <TCut.h>
 
-void addPtWeights()
+void addPtWeights(const TString filetag)
 {
-   TFile * f_w = TFile::Open("./ptetaweights.GluGluHToTauTau_PU200.root");
+   TFile * f_w = TFile::Open(filetag);
    TH1D * h = (TH1D*)f_w->Get("w_pt");
    TH1D * h_ptweights = (TH1D*)h->Clone("h_ptweights");
    TH1D * h_ptweights_temp = (TH1D*)h->Clone("h_ptweights_temp");
