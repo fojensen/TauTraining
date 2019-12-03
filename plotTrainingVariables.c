@@ -98,10 +98,10 @@ void plotTrainingVariables()
    TH1D h_hasSecondaryVertex("h_hasSecondaryVertex", ";hasSecondaryVertex;#tau_{h} candidates / bin", 2, -0.5, 1.5);
    runPoint(&h_hasSecondaryVertex, "hasSecondaryVertex", false);
 
-   TH1D h_flightLength("h_flightLength", ";hasSecondaryVertex? TMath::Sqrt(TMath::Abs(flightLength)) : -0.25;#tau_{h} candidates / 0.0875", 40, -0.5, 3.);
+   TH1D h_flightLength("h_flightLength", ";TMath::Sqrt(TMath::Abs(flightLength));#tau_{h} candidates / 0.0875", 40, -0.5, 3.);
    runPoint(&h_flightLength, "hasSecondaryVertex? TMath::Sqrt(TMath::Abs(flightLength)) : -0.25", true);
 
-   TH1D h_flightLengthSig("h_flightLengthSig", ";hasSecondaryVertex? TMath::Abs(flightLengthSig): -0.25;#tau_{h} candidates / 0.2625", 40, -0.5, 10.);
+   TH1D h_flightLengthSig("h_flightLengthSig", ";TMath::Abs(flightLengthSig);#tau_{h} candidates / 0.2625", 40, -0.5, 10.);
    runPoint(&h_flightLengthSig, "hasSecondaryVertex? TMath::Abs(flightLengthSig): -0.25", true);
 
    TH1D h_puCorrPtSum("h_puCorrPtSum", ";puCorrPtSum;#tau_{h} candidates / 6.25 GeV", 40, 0., 250.);

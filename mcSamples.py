@@ -28,6 +28,14 @@ data['people'].append({
    'das': '/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/PhaseIISpr18AODMiniAOD-PU200_93X_upgrade2023_realistic_v5-v1/MINIAODSIM',
    'globaltag': '93X_upgrade2023_realistic_v5',
 })
+
+data['people'].append({
+   'name': '',
+   'das': '/VBF_BulkGravToWW_narrow_M-2000_14TeV-madgraph/PhaseIISpr18AODMiniAOD-PU200_93X_upgrade2023_realistic_v5_ext1-v1/MINIAODSIM'
+   
+
+/VBF_BulkGravToWW_narrow_M-2000_14TeV-madgraph/PhaseIISpr18AODMiniAOD-PU200_93X_upgrade2023_realistic_v5-v1/MINIAODSIM
+
 #data['people'].append({
 #   'name': 'QCD_Flat_Pt-15to7000_noPU',
 #   'das': '/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/PhaseIISpr18AODMiniAOD-noPU_93X_upgrade2023_realistic_v5-v1/MINIAODSIM',
@@ -43,6 +51,8 @@ data['people'].append({
 #   'das': '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v1/MINIAODSIM',
 #   'globaltag': '102X_upgrade2018_realistic_v19' 
 #})
+
+
 
 with open('mcSamples.json', 'w') as outfile:
    json.dump(data, outfile)
