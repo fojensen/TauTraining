@@ -17,6 +17,7 @@ void plotROC()
    h_test->SetLineWidth(2);
    h_test->SetLineColor(6);
    h_test->SetMarkerColor(6);
+   
    h_train->SetLineWidth(2);
    h_train->SetLineColor(7);
    h_train->SetMarkerColor(7);
@@ -179,22 +180,22 @@ void plotEff(const TString var)
    const TCut wp_tight = TCut(wp40);
 
    TGraphAsymmErrors * g_sig_loose = plotEff_runPoint(wp_loose, sig, "g_sig_loose", var);
-   g_sig_loose->SetMarkerStyle(7);
+   g_sig_loose->SetMarkerStyle(20);
    g_sig_loose->SetMarkerColor(6);
    g_sig_loose->SetLineColor(6);
    
    TGraphAsymmErrors * g_sig_tight = plotEff_runPoint(wp_tight, sig, "g_sig_tight", var);
-   g_sig_tight->SetMarkerStyle(7);
+   g_sig_tight->SetMarkerStyle(20);
    g_sig_tight->SetMarkerColor(7);
    g_sig_tight->SetLineColor(7);
    
    TGraphAsymmErrors * g_bkg_loose = plotEff_runPoint(wp_loose, bkg, "g_bkg_loose", var);
-   g_bkg_loose->SetMarkerStyle(7);
+   g_bkg_loose->SetMarkerStyle(20);
    g_bkg_loose->SetMarkerColor(8);
    g_bkg_loose->SetLineColor(8);
    
    TGraphAsymmErrors * g_bkg_tight = plotEff_runPoint(wp_tight, bkg, "g_bkg_tight", var);
-   g_bkg_tight->SetMarkerStyle(7);
+   g_bkg_tight->SetMarkerStyle(20);
    g_bkg_tight->SetMarkerColor(9);
    g_bkg_tight->SetLineColor(9);
 
