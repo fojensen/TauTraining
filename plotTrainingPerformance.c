@@ -111,7 +111,7 @@ TGraphAsymmErrors* plotEff_runPoint(const TCut wp, const TCut sigbkg, const TStr
    } else if (var=="eta") {
        ntemp = 6;
        title = ";|#eta|;efficiency";
-       var_ = "TMath_Abs_eta_";
+       var_ = "TMath::Abs(eta)";
    } else {
       return 0;
    }

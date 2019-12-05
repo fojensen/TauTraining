@@ -85,7 +85,7 @@ void plotTrainingVariables()
 
    TH1D h_neutralIsoPtSum("h_neutralIsoPtSum", ";neutralIsoPtSum;#tau_{h} candidates / 1 GeV", 40, 0., 40.);
    runPoint(&h_neutralIsoPtSum, "neutralIsoPtSum", true);
-
+   
    TH1D h_decayMode("h_decayMode", ";decayMode;# of #tau_{h} / bin",  11, -0.5, 10.5);
    runPoint(&h_decayMode, "decayMode", false);
 
@@ -98,11 +98,11 @@ void plotTrainingVariables()
    TH1D h_hasSecondaryVertex("h_hasSecondaryVertex", ";hasSecondaryVertex;#tau_{h} candidates / bin", 2, -0.5, 1.5);
    runPoint(&h_hasSecondaryVertex, "hasSecondaryVertex", false);
 
-   TH1D h_flightLength("h_flightLength", ";TMath::Sqrt(TMath::Abs(flightLength));#tau_{h} candidates / 0.0875", 40, -0.5, 3.);
-   runPoint(&h_flightLength, "hasSecondaryVertex? TMath::Sqrt(TMath::Abs(flightLength)) : -0.25", true);
+   TH1D h_flightLength("h_flightLength", ";TMath::Sqrt(TMath::Abs(flightLength));#tau_{h} candidates / bin", 40, -0.25, 3.);
+   runPoint(&h_flightLength, "hasSecondaryVertex? TMath::Sqrt(TMath::Abs(flightLength)) : -0.1", true);
 
-   TH1D h_flightLengthSig("h_flightLengthSig", ";TMath::Abs(flightLengthSig);#tau_{h} candidates / 0.2625", 40, -0.5, 10.);
-   runPoint(&h_flightLengthSig, "hasSecondaryVertex? TMath::Abs(flightLengthSig): -0.25", true);
+   TH1D h_flightLengthSig("h_flightLengthSig", ";TMath::Abs(flightLengthSig);#tau_{h} candidates / bin", 40, -0.25, 10.);
+   runPoint(&h_flightLengthSig, "hasSecondaryVertex? TMath::Abs(flightLengthSig): -0.1", true);
 
    TH1D h_puCorrPtSum("h_puCorrPtSum", ";puCorrPtSum;#tau_{h} candidates / 6.25 GeV", 40, 0., 250.);
    runPoint(&h_puCorrPtSum, "puCorrPtSum", true);

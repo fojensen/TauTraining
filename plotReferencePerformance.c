@@ -190,7 +190,7 @@ void plotROC()
    g_deepTau2017v2p1->SetLineColor(7);
    g_deepTau2017v2p1->Draw("PE, SAME");
 
-   TLegend * l = new TLegend(0.25, 0.2, 0.6, 0.875);
+   TLegend *l = new TLegend(0.25, 0.7, 0.6, 0.875);
    l->SetBorderSize(0);
    l->AddEntry(g_run2017v2, "run2017v2", "P");
    l->AddEntry(g_deepTau2017v2p1, "deepTau2017v2p1", "P");

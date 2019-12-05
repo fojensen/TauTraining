@@ -96,8 +96,8 @@ TCanvas * drawWeights(TH1D *h_sig, TH1D *h_bkg, TH1D *h_weight, const TString va
       const double n = h_sig->GetBinContent(i);
       if (n) {
          const double f = h_weight->GetBinError(i)/h_weight->GetBinContent(i);
-         if (f>0.1) {
-            std::cout << "bin " <<  i << " fractional error weight exceeds 10%" << std::endl;
+         if (f>0.05) {
+            std::cout << "bin " <<  i << " fractional error weight exceeds 5%" << std::endl;
             std::cout << "   low edge: " << h_weight->GetBinLowEdge(i) << std::endl;
          }
       } else {
@@ -111,12 +111,21 @@ TCanvas * drawWeights(TH1D *h_sig, TH1D *h_bkg, TH1D *h_weight, const TString va
 
 TCanvas * draw2DWeights(TH2D *h)
 {
-   TCanvas * canvas = new TCanvas("canvas", "draw2DWeights", 400, 400);
+   TCanvas * canvas = new TCanvas("canvas", "draw2DWeights", 800, 800);
    canvas->SetLogy();
-   h->SetMarkerSize(2);
+   h->SetMarkerSize(1);
    h->Draw("COLZ, TEXT, E");
    h->SetStats(0);
    canvas->SaveAs("./plots/weights.pteta.pdf");
+
+   for (int i = 1; i <= h->GetNbinsX(); ++i) {
+      for (int j = 1; j <= h->GetNbinsY(); ++j) {
+         double y = h->GetBinContent(i, j);
+         double yerr = h->GetBinError(i, j);
+         if (yerr/y>0.05) std::cout << "large error in bin " << i << " " << j <<  " | " << yerr/y << std::endl;
+      }
+   }
+
    return canvas;
 }
 
@@ -124,20 +133,22 @@ void makeWeights()
 {
    gStyle->SetPaintTextFormat("4.2f");
 
-   const int n_pt = 25;
-   const double x_pt[n_pt+1] = {20., 25., 30., 35., 40., 45., 50., 55., 60., 65., 70., 75., 80., 85., 90., 95., 100., 105., 110., 115., 120., 130., 140., 150., 165., 220.};
-   TH1D * h_pt = new TH1D("h_pt", ";p_{T} [GeV];#tau_{h} candidates / bin", n_pt, x_pt);
+   //const int n_pt = 13;
+   //const double x_pt[n_pt+1] = {20., 25., 30., 35., 45., 55., 65., 80., 95., 110., 130., 160., 170., 220.};
+   //TH1D * h_pt = new TH1D("h_pt", ";p_{T} [GeV];#tau_{h} candidates / bin", n_pt, x_pt);
+   TH1D * h_pt = new TH1D("h_pt", ";p_{T} [GeV];#tau_{h} candidates / 10 GeV", 20, 20., 220.);
    h_pt->Sumw2();
    
-   const int n_eta = 6;
-   const double x_eta[n_eta+1] = {0., 0.5, 1., 1.5, 2., 2.5, 3.}; 
-   TH1D * h_eta = new TH1D("h_eta", ";|#eta|;#tau_{h} candidates / 0.25", n_eta, x_eta);
+   //const int n_eta = 12;
+   //const double x_eta[n_eta+1] = {0., 0.25, 0.5, 0.75, 1., 1.25, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3.}; 
+   //TH1D * h_eta = new TH1D("h_eta", ";|#eta|;#tau_{h} candidates / 0.25", n_eta, x_eta);
+   TH1D * h_eta = new TH1D("h_eta", ";|#eta|;#tau_{h} candidates / 0.1", 30, 0., 3.);
    h_eta->Sumw2();
    
-   const int n2_pt = 6;
-   const double x2_pt[n2_pt+1] = {20., 30., 50., 80., 120., 170., 245.};
-   const int n2_eta = 3;
-   const double x2_eta[n2_eta+1] = {0., 1., 1.5, 3.};
+   const int n2_pt = 8;
+   const double x2_pt[n2_pt+1] = {20., 30., 40., 50., 60., 70., 80., 95., 220.};
+   const int n2_eta = 2;
+   const double x2_eta[n2_eta+1] = {0., 1.5, 3.};
    TH2D * h_pteta = new TH2D("h_pteta", ";|#eta|;p_{T} [GeV]", n2_eta, x2_eta, n2_pt, x2_pt);
    h_pteta->Sumw2();
 
