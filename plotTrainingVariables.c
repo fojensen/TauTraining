@@ -107,13 +107,13 @@ void plotTrainingVariables()
    TH1D h_puCorrPtSum("h_puCorrPtSum", ";puCorrPtSum;#tau_{h} candidates / 6.25 GeV", 40, 0., 250.);
    runPoint(&h_puCorrPtSum, "puCorrPtSum", true);
  
-   TH1D h_pt("h_pt", ";pt;#tau_{h} candidates / 5.625 GeV", 40, 20., 245.);
+   TH1D h_pt("h_pt", ";pt;#tau_{h} candidates / 5 GeV", 40, 20., 220.);
    runPoint(&h_pt, "pt", true);
 
    TH1D h_eta("h_eta", ";TMath::Abs(eta);#tau_{h} candidates / 0.075", 40, 0., 3.);
    runPoint(&h_eta, "TMath::Abs(eta)", false);
 
-   TH1D h_photonPtSumOutsideSignalCone("h_photonPtSumOutsideSignalCone", ";photonPtSumOutsideSignalCone;#tau_{h} candidates / 0.25 GeV", 40, 0., 10.);
+   /*TH1D h_photonPtSumOutsideSignalCone("h_photonPtSumOutsideSignalCone", ";photonPtSumOutsideSignalCone;#tau_{h} candidates / 0.25 GeV", 40, 0., 10.);
    runPoint(&h_photonPtSumOutsideSignalCone, "photonPtSumOutsideSignalCone", true);
 
    TH1D h_ip3d("h_ip3d", ";TMath::Sqrt(TMath::Abs(ip3d));#tau_{h} candidates / 0.005", 40, 0., 0.2);
@@ -144,6 +144,6 @@ void plotTrainingVariables()
    runPoint(&h_isoCands_deta, "isolationGammaCands_size? isoCands_deta : -0.25", false);
 
    TH1D h_isoCands_dphi("h_isoCands_dphi", ";isoCands_dphi;#tau_{h} candidates / 0.0325", 40, -0.5, 0.8);
-   runPoint(&h_isoCands_dphi, "isolationGammaCands_size? isoCands_dphi : -0.25", false);
+   runPoint(&h_isoCands_dphi, "isolationGammaCands_size? isoCands_dphi : -0.25", false);*/
 }
 

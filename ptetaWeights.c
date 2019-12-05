@@ -4,26 +4,25 @@
 #include <TCanvas.h>
 #include <TFile.h>
 #include <iostream>
-#include <TH1F.h>
+#include <TH1D.h>
 #include <TChain.h>
-#include <TH2F.h>
+#include <TH2D.h>
 
-void addWeights(const TString weightFile, const TString bkgTag)
+void addWeights()
 {
-   TFile * f_w = TFile::Open(weightFile);
-   TH1F * w_pt = (TH1F*)f_w->Get("w_pt");
-   TH1F * w_eta = (TH1F*)f_w->Get("w_eta");
-   TH2F * w_pteta = (TH2F*)f_w->Get("w_pteta");
+   TFile * f_w = TFile::Open("./ptetaWeights.root");
+   TH1D * w_pt = (TH1D*)f_w->Get("w_pt");
+   TH1D * w_eta = (TH1D*)f_w->Get("w_eta");
+   TH2D * w_pteta = (TH2D*)f_w->Get("w_pteta");
    w_pt->SetDirectory(0);
    w_eta->SetDirectory(0);
    w_pteta->SetDirectory(0);
    f_w->Close();
-   TH1F * w_pt_temp = (TH1F*)w_pt->Clone("w_pt_temp");
-   TH1F * w_eta_temp = (TH1F*)w_eta->Clone("w_eta_temp");
-   TH2F * w_pteta_temp = (TH2F*)w_pteta->Clone("w_pteta_temp");
+   TH1D * w_pt_temp = (TH1D*)w_pt->Clone("w_pt_temp");
+   TH1D * w_eta_temp = (TH1D*)w_eta->Clone("w_eta_temp");
+   TH2D * w_pteta_temp = (TH2D*)w_pteta->Clone("w_pteta_temp");
 
-   const TString bkgFile = "./outputData/skim_"+bkgTag+".root";
-   TFile * f = TFile::Open(bkgFile, "UPDATE");
+   TFile * f = TFile::Open("./outputData/skim_QCD_Flat_Pt-15to7000_PU200.root", "UPDATE");
    TTree * t = (TTree*)f->Get("skimmedTree");
    
    float ptWeight = 0.;
@@ -48,14 +47,11 @@ void addWeights(const TString weightFile, const TString bkgTag)
       etaWeight = w_eta->GetBinContent(w_eta_temp->Fill(TMath::Abs(eta)));
       b_etaWeight->Fill();
       const int bin = w_pteta_temp->Fill(TMath::Abs(eta), pt);
-      std::cout << bin << std::endl;
       int binx = 0;
       int biny = 0;
       int binz = 0;
       w_pteta_temp->GetBinXYZ(bin, binx, biny, binz);
-      std::cout << binx << " " << biny << std::endl;
       ptetaWeight = w_pteta->GetBinContent(binx, biny);
-      std::cout << ptetaWeight << " ptetaWeight " << std::endl;
       b_ptetaWeight->Fill();
    }
 
@@ -63,10 +59,9 @@ void addWeights(const TString weightFile, const TString bkgTag)
    f->Close();
 }
 
-TCanvas * drawWeights(TH1F * h_sig, TH1F *h_bkg, TH1F * h_weight, const TString sigTag, const TString bkgTag, const TString var)
+TCanvas * drawWeights(TH1D *h_sig, TH1D *h_bkg, TH1D *h_weight, const TString var)
 {
-   const TString canvasName = "canvas_"+sigTag+"_"+bkgTag+"_"+var;
-   TCanvas * canvas = new TCanvas(canvasName, canvasName, 800, 400);
+   TCanvas * canvas = new TCanvas("canvas_"+var, "drawWeights", 800, 400);
    canvas->Divide(2, 1);
 
    TPad * p1 = (TPad*)canvas->cd(1);
@@ -92,78 +87,70 @@ TCanvas * drawWeights(TH1F * h_sig, TH1F *h_bkg, TH1F * h_weight, const TString 
    h_weight->SetMarkerStyle(20);
    h_weight->SetStats(0);
    h_weight->Draw("PE");
+   
+   char buffer[100];
+   sprintf(buffer, "./plots/weights.%s.pdf", var.Data());
+   canvas->SaveAs(buffer);
 
-   const TString saveTag = "./plots/ptWeights_"+sigTag+"_"+bkgTag+".pdf";
-   canvas->SaveAs(saveTag);
-
-   std::cout << "stats for " << var << std::endl;
-   for (int i = 0; i < h_weight->GetNbinsX()+1; ++i) {
-      std::cout << "bin " << i << std::endl;
-      std::cout << " " << h_bkg->GetBinContent(i) << " / " << h_sig->GetBinContent(i) << std::endl;
-      std::cout << " = " << h_weight->GetBinContent(i) << " +- " << h_weight->GetBinError(i) << std::endl;
-      if (h_weight->GetBinContent(i)) {
-         std::cout << " fractional error: " << h_weight->GetBinError(i)/h_weight->GetBinContent(i);
+   for (int i = 1; i <= h_weight->GetNbinsX(); ++i) {
+      const double n = h_sig->GetBinContent(i);
+      if (n) {
+         const double f = h_weight->GetBinError(i)/h_weight->GetBinContent(i);
+         if (f>0.1) {
+            std::cout << "bin " <<  i << " fractional error weight exceeds 10%" << std::endl;
+            std::cout << "   low edge: " << h_weight->GetBinLowEdge(i) << std::endl;
+         }
+      } else {
+         std::cout << "bin " <<  i << " has no signal entries!" << std::endl;
+         std::cout << "   low edge: " << h_weight->GetBinLowEdge(i) << std::endl;
       }
-      std::cout << std::endl;
    }
  
    return canvas;
 }
 
-TCanvas * draw2DWeights(TH2F *h)
+TCanvas * draw2DWeights(TH2D *h)
 {
-   TCanvas * canvas = new TCanvas("canvas", "pteta", 400, 400);
+   TCanvas * canvas = new TCanvas("canvas", "draw2DWeights", 400, 400);
    canvas->SetLogy();
    h->SetMarkerSize(2);
    h->Draw("COLZ, TEXT, E");
    h->SetStats(0);
-   canvas->SaveAs("./plots/ptetaWeights.pdf");
-
-   for (int i = 1; i < h->GetNbinsX()+1; ++i) {
-      for (int j = 1; j < h->GetNbinsY()+1; ++j) {
-         std::cout << "bin " << i << ", " << j << std::endl;
-         std::cout << " = " << h->GetBinContent(i, j) << " +- " << h->GetBinError(i, j) << std::endl;
-         if (h->GetBinContent(i, j)) {
-            std::cout << " fractional error: " << h->GetBinError(i, j)/h->GetBinContent(i, j);
-       }
-         std::cout << std::endl;
-      }
-   }
+   canvas->SaveAs("./plots/weights.pteta.pdf");
    return canvas;
 }
 
-TString makeWeights(const TString sigTag, const TString bkgTag)
+void makeWeights()
 {
    gStyle->SetPaintTextFormat("4.2f");
-   const int n_pt = 9;
-   const double x_pt[n_pt+1] = {20., 25., 35., 50., 70., 95., 125., 160., 200., 245.};
-   TH1F * h_pt = new TH1F("h_pt", ";p_{T} [GeV];#tau_{h} candidates / bin", n_pt, x_pt);
+
+   const int n_pt = 25;
+   const double x_pt[n_pt+1] = {20., 25., 30., 35., 40., 45., 50., 55., 60., 65., 70., 75., 80., 85., 90., 95., 100., 105., 110., 115., 120., 130., 140., 150., 165., 220.};
+   TH1D * h_pt = new TH1D("h_pt", ";p_{T} [GeV];#tau_{h} candidates / bin", n_pt, x_pt);
    h_pt->Sumw2();
    
    const int n_eta = 6;
    const double x_eta[n_eta+1] = {0., 0.5, 1., 1.5, 2., 2.5, 3.}; 
-   TH1F * h_eta = new TH1F("h_eta", ";|#eta|;#tau_{h} candidates / 0.25", n_eta, x_eta);
+   TH1D * h_eta = new TH1D("h_eta", ";|#eta|;#tau_{h} candidates / 0.25", n_eta, x_eta);
    h_eta->Sumw2();
    
    const int n2_pt = 6;
    const double x2_pt[n2_pt+1] = {20., 30., 50., 80., 120., 170., 245.};
    const int n2_eta = 3;
    const double x2_eta[n2_eta+1] = {0., 1., 1.5, 3.};
-   TH2F * h_pteta = new TH2F("h_pteta", ";|#eta|;p_{T} [GeV]", n2_eta, x2_eta, n2_pt, x2_pt);
+   TH2D * h_pteta = new TH2D("h_pteta", ";|#eta|;p_{T} [GeV]", n2_eta, x2_eta, n2_pt, x2_pt);
    h_pteta->Sumw2();
 
-   TH1F * h_pt_sig = (TH1F*)h_pt->Clone("h_pt_sig");
-   TH1F * h_eta_sig = (TH1F*)h_eta->Clone("h_eta_sig");
-   TH2F * h_pteta_sig = (TH2F*)h_pteta->Clone("h_pteta_sig");
+   TH1D * h_pt_sig = (TH1D*)h_pt->Clone("h_pt_sig");
+   TH1D * h_eta_sig = (TH1D*)h_eta->Clone("h_eta_sig");
+   TH2D * h_pteta_sig = (TH2D*)h_pteta->Clone("h_pteta_sig");
 
-   TH1F * h_pt_bkg = (TH1F*)h_pt->Clone("h_pt_bkg");
-   TH1F * h_eta_bkg = (TH1F*)h_eta->Clone("h_eta_bkg");
-   TH2F * h_pteta_bkg = (TH2F*)h_pteta->Clone("h_pteta_bkg");
+   TH1D * h_pt_bkg = (TH1D*)h_pt->Clone("h_pt_bkg");
+   TH1D * h_eta_bkg = (TH1D*)h_eta->Clone("h_eta_bkg");
+   TH2D * h_pteta_bkg = (TH2D*)h_pteta->Clone("h_pteta_bkg");
 
    TChain * c_sig = new TChain("skimmedTree");
-   char infile_sig[100];
-   sprintf(infile_sig, "./outputData/skim_%s.root", sigTag.Data());
-   c_sig->Add(infile_sig);
+   c_sig->Add("./outputData/skim_GluGluHToTauTau_PU200.root");
    const int n_sig = c_sig->GetEntries();
    std::cout << "number of signal entries: " << n_sig << std::endl;
 
@@ -179,36 +166,31 @@ TString makeWeights(const TString sigTag, const TString bkgTag)
    c_sig->Project("h_pteta_sig", "pt:TMath::Abs(eta)", cut3);
 
    TChain * c_bkg = new TChain("skimmedTree");
-   char infile_bkg[100];
-   sprintf(infile_bkg, "./outputData/skim_%s.root", bkgTag.Data());
-   c_bkg->Add(infile_bkg);
+   c_bkg->Add("./outputData/skim_QCD_Flat_Pt-15to7000_PU200.root");
    const int n_bkg = c_bkg->GetEntries();
    std::cout << "number of background entries: " << n_bkg << std::endl;
 
    c_bkg->Project("h_pt_bkg", "pt");
-   //c_bkg->Project("h_pt_bkg", "pt", "ptweight * (1>0)"); // test weights
    c_bkg->Project("h_eta_bkg", "TMath::Abs(eta)");
    c_bkg->Project("h_pteta_bkg", "pt:TMath::Abs(eta)");
 
-   TH1F * w_pt = (TH1F*)h_pt_sig->Clone("w_pt");
+   TH1D * w_pt = (TH1D*)h_pt_sig->Clone("w_pt");
    w_pt->Divide(h_pt_bkg);
    w_pt->Scale(n_bkg/n_sig); // preserve QCD normalization
    w_pt->GetYaxis()->SetTitle("#tau_{h} / jet");
-   drawWeights(h_pt_sig, h_pt_bkg, w_pt, sigTag, bkgTag, "pt");
+   drawWeights(h_pt_sig, h_pt_bkg, w_pt, "pt");
 
-   TH1F * w_eta = (TH1F*)h_eta_sig->Clone("w_eta");
+   TH1D * w_eta = (TH1D*)h_eta_sig->Clone("w_eta");
    w_eta->Divide(h_eta_bkg);
    w_eta->Scale(n_bkg/n_sig); // preserve QCD normalization
-   drawWeights(h_eta_sig, h_eta_bkg, w_eta, sigTag, bkgTag, "eta");
+   drawWeights(h_eta_sig, h_eta_bkg, w_eta, "eta");
 
-   TH2F * w_pteta = (TH2F*)h_pteta_sig->Clone("w_pteta");
+   TH2D * w_pteta = (TH2D*)h_pteta_sig->Clone("w_pteta");
    w_pteta->Divide(h_pteta_bkg);
    w_pteta->Scale(n_bkg/n_sig); // preserve QCD normalization
    draw2DWeights(w_pteta);
 
-   //sprintf(outfile, "./ptWeights.%s.closure.root", saveTag.Data()); // test weights
-   const TString outputFile = "./ptetaWeights_"+sigTag+"_"+bkgTag+".root";
-   TFile * f = new TFile(outputFile, "RECREATE");
+   TFile * f = new TFile("ptetaWeights.root", "RECREATE");
    h_pt_sig->Write();
    h_pt_bkg->Write();
    w_pt->Write();
@@ -219,12 +201,11 @@ TString makeWeights(const TString sigTag, const TString bkgTag)
    h_pteta_bkg->Write();
    w_pteta->Write(); 
    f->Close();
-
-   return outputFile;
 }
 
-void ptetaWeights(const TString sigTag, const TString bkgTag)
+void ptetaWeights()
 {
-   const TString weightFile = makeWeights(sigTag, bkgTag);
-   addWeights(weightFile, bkgTag);
+   makeWeights();
+   addWeights();
 }
+

@@ -27,38 +27,38 @@ private:
   
    TTree * tree;
    
-   float pt;
-   float eta;
    float chargedIsoPtSum;
    float neutralIsoPtSum;
-   float puCorrPtSum;
-   float photonPtSumOutsideSignalCone; 
    int decayMode;
-   int isolationGammaCands_size;
-   int signalGammaCands_size;
+   float leadChargedHadrCand_dxy;
+   float leadChargedHadrCand_dxysig;  
+   bool hasSecondaryVertex;
+   float flightLength;
+   float flightLengthSig; 
+   float puCorrPtSum;
+   float pt;
+   float eta;
+   float photonPtSumOutsideSignalCone; 
    float ip3d;
    float ip3d_Sig;
-   bool hasSecondaryVertex;
-   float leadChargedHadrCand_dxy;
-   float leadChargedHadrCand_dxysig;
-   float decayModeFinding;
-   TString labels_run2017v2[8];
-   TString labels_deepTau2017v2p1[9];
-   float iso_run2017v2[8];
-   float iso_deepTau2017v2p1[9];
-   float drmin_jet;
-   float drmin_tau_e;
-   float drmin_tau_mu;
-   float drmin_tau_tau;
-   float flightLengthSig;
-   float flightLength;
-
+   int isolationGammaCands_size;
+   int signalGammaCands_size;
    float sigCands_dr;
    float sigCands_deta;
    float sigCands_dphi;
    float isoCands_dr;
    float isoCands_deta;
-   float isoCands_dphi;    
+   float isoCands_dphi;
+
+   TString labels_run2017v2[8];
+   TString labels_deepTau2017v2p1[9];
+   float iso_run2017v2[8];
+   float iso_deepTau2017v2p1[9];
+   float decayModeFinding;
+   float drmin_jet;
+   float drmin_tau_e;
+   float drmin_tau_mu;
+   float drmin_tau_tau;
 };
 
 TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
@@ -72,7 +72,6 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
  
    tree->Branch("pt", &pt, "pt/F");
    tree->Branch("eta", &eta, "eta/F");
-   tree->Branch("decayModeFinding", &decayModeFinding, "decayModeFinding/F");
    tree->Branch("decayMode", &decayMode, "decayMode/I");  
    tree->Branch("chargedIsoPtSum", &chargedIsoPtSum, "chargedIsoPtSum/F");
    tree->Branch("neutralIsoPtSum", &neutralIsoPtSum, "neutralIsoPtSum/F");
@@ -87,21 +86,20 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("flightLength", &flightLength, "flightLength/F");
    tree->Branch("leadChargedHadrCand_dxy", &leadChargedHadrCand_dxy, "leadChargedHadrCand_dxy/F");
    tree->Branch("leadChargedHadrCand_dxysig", &leadChargedHadrCand_dxysig, "leadChargedHadrCand_dxysig/F");
-
-   tree->Branch("iso_run2017v2", iso_run2017v2, "iso_run2017v2[8]/F");
-   tree->Branch("iso_deepTau2017v2p1", iso_deepTau2017v2p1, "iso_deepTau2017v2p1[9]/F");
-
-   tree->Branch("drmin_jet", &drmin_jet, "drmin_jet/F");   
-   tree->Branch("drmin_tau_e", &drmin_tau_e, "drmin_tau_e/F");
-   tree->Branch("drmin_tau_mu", &drmin_tau_mu, "drmin_tau_mu/F");
-   tree->Branch("drmin_tau_tau", &drmin_tau_tau, "drmin_tau_tau/F");
-
    tree->Branch("sigCands_dr", &sigCands_dr, "sigCands_dr/F");
    tree->Branch("sigCands_deta", &sigCands_deta, "sigCands_deta/F");
    tree->Branch("sigCands_dphi", &sigCands_dphi, "sigCands_dphi/F");
    tree->Branch("isoCands_dr", &isoCands_dr, "isoCands_dr/F");
    tree->Branch("isoCands_deta", &isoCands_deta, "isoCands_deta/F");
    tree->Branch("isoCands_dphi", &isoCands_dphi, "isoCands_dphi/F");
+
+   tree->Branch("iso_run2017v2", iso_run2017v2, "iso_run2017v2[8]/F");
+   tree->Branch("iso_deepTau2017v2p1", iso_deepTau2017v2p1, "iso_deepTau2017v2p1[9]/F");
+   tree->Branch("decayModeFinding", &decayModeFinding, "decayModeFinding/F");
+   tree->Branch("drmin_jet", &drmin_jet, "drmin_jet/F");   
+   tree->Branch("drmin_tau_e", &drmin_tau_e, "drmin_tau_e/F");
+   tree->Branch("drmin_tau_mu", &drmin_tau_mu, "drmin_tau_mu/F");
+   tree->Branch("drmin_tau_tau", &drmin_tau_tau, "drmin_tau_tau/F");
 
    labels_run2017v2[0] = "inclusive";
    labels_run2017v2[1] = "byVVLooseIsolationMVArun2017v2DBoldDMwLT2017";
