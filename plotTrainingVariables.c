@@ -113,7 +113,7 @@ void plotTrainingVariables()
    TH1D h_eta("h_eta", ";TMath::Abs(eta);#tau_{h} candidates / 0.075", 40, 0., 3.);
    runPoint(&h_eta, "TMath::Abs(eta)", false);
 
-   /*TH1D h_photonPtSumOutsideSignalCone("h_photonPtSumOutsideSignalCone", ";photonPtSumOutsideSignalCone;#tau_{h} candidates / 0.25 GeV", 40, 0., 10.);
+   TH1D h_photonPtSumOutsideSignalCone("h_photonPtSumOutsideSignalCone", ";photonPtSumOutsideSignalCone;#tau_{h} candidates / 0.25 GeV", 40, 0., 10.);
    runPoint(&h_photonPtSumOutsideSignalCone, "photonPtSumOutsideSignalCone", true);
 
    TH1D h_ip3d("h_ip3d", ";TMath::Sqrt(TMath::Abs(ip3d));#tau_{h} candidates / 0.005", 40, 0., 0.2);
@@ -128,22 +128,22 @@ void plotTrainingVariables()
    TH1D h_isolationGammaCands_size("h_isolationGammaCands_size", ";isolationGammaCands_size;#tau_{h} candidates / 1", 150, -0.5, 149.5);
    runPoint(&h_isolationGammaCands_size, "isolationGammaCands_size", true);
 
-   TH1D h_sigCands_dr("h_sigCands_dr", ";sigCands_dr;#tau_{h} candidates / 0.0325", 40, -0.5, 0.8);
-   runPoint(&h_sigCands_dr, "signalGammaCands_size? sigCands_dr : -0.25", false);
+   TH1D h_sigCands_dr("h_sigCands_dr", ";sigCands_dr;#tau_{h} candidates / 0.0325", 40, -0.25, 0.8);
+   runPoint(&h_sigCands_dr, "signalGammaCands_size? sigCands_dr : -0.1", false);
 
-   TH1D h_sigCands_deta("h_sigCands_deta", ";sigCands_deta;#tau_{h} candidates / 0.0325", 40, -0.5, 0.8);
-   runPoint(&h_sigCands_deta, "signalGammaCands_size? sigCands_deta : -0.25", false);
+   TH1D h_sigCands_deta("h_sigCands_deta", ";sigCands_deta;#tau_{h} candidates / 0.0325", 40, -0.25, 0.8);
+   runPoint(&h_sigCands_deta, "signalGammaCands_size? sigCands_deta : -0.1", false);
 
-   TH1D h_sigCands_dphi("h_sigCands_dphi", ";sigCands_dphi;#tau_{h} candidates / 0.0325", 40, -0.5, 0.8);
-   runPoint(&h_sigCands_dphi, "signalGammaCands_size? sigCands_dphi : -0.25", false);
+   TH1D h_sigCands_dphi("h_sigCands_dphi", ";sigCands_dphi;#tau_{h} candidates / 0.0325", 40, -0.25, 0.8);
+   runPoint(&h_sigCands_dphi, "signalGammaCands_size? sigCands_dphi : -0.1", false);
 
-   TH1D h_isoCands_dr("h_isoCands_dr", ";isoCands_dr;#tau_{h} candidates / 0.0325", 40, -0.5, 0.8);
-   runPoint(&h_isoCands_dr, "isolationGammaCands_size? isoCands_dr : -0.25", false);
+   TH1D h_isoCands_dr("h_isoCands_dr", ";isoCands_dr;#tau_{h} candidates / 0.0325", 40, -0.25, 0.8);
+   runPoint(&h_isoCands_dr, "isolationGammaCands_size? isoCands_dr : -0.1", false);
 
-   TH1D h_isoCands_deta("h_isoCands_deta", ";isoCands_deta;#tau_{h} candidates / 0.0325", 40, -0.5, 0.8);
-   runPoint(&h_isoCands_deta, "isolationGammaCands_size? isoCands_deta : -0.25", false);
+   TH1D h_isoCands_deta("h_isoCands_deta", ";isoCands_deta;#tau_{h} candidates / 0.0325", 40, -0.25, 0.8);
+   runPoint(&h_isoCands_deta, "isolationGammaCands_size? isoCands_deta : -0.1", false);
 
-   TH1D h_isoCands_dphi("h_isoCands_dphi", ";isoCands_dphi;#tau_{h} candidates / 0.0325", 40, -0.5, 0.8);
-   runPoint(&h_isoCands_dphi, "isolationGammaCands_size? isoCands_dphi : -0.25", false);*/
+   TH1D h_isoCands_dphi("h_isoCands_dphi", ";isoCands_dphi;#tau_{h} candidates / 0.0325", 40, -0.25, 0.8);
+   runPoint(&h_isoCands_dphi, "isolationGammaCands_size? isoCands_dphi : -0.1", false);
 }
 

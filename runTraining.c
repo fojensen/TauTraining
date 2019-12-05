@@ -29,17 +29,17 @@ void runTraining()
    loader->AddSpectator("eta");
 
    // Run 2
-   /*loader.AddVariable("photonPtSumOutsideSignalCone"); 
-   loader.AddVariable("TMath::Sqrt(TMath::Abs(ip3d))");
-   loader.AddVariable("TMath::Abs(ip3d_Sig)");
-   loader.AddVariable("signalGammaCands_size");
-   loader.AddVariable("signalGammaCands_size? sigCands_dr : -0.25");
-   loader.AddVariable("signalGammaCands_size? sigCands_deta : -0.25");
-   loader.AddVariable("signalGammaCands_size? sigCands_dphi: -0.25");
-   loader.AddVariable("isolationGammaCands_size");
-   loader.AddVariable("isolationGammaCands_size? isoCands_dr: -0.25");
-   loader.AddVariable("isolationGammaCands_size? isoCands_deta: -0.25");
-   loader.AddVariable("isolationGammaCands_size? isoCands_dphi: -0.25");*/
+   loader->AddVariable("photonPtSumOutsideSignalCone"); 
+   loader->AddVariable("TMath::Sqrt(TMath::Abs(ip3d))");
+   loader->AddVariable("TMath::Abs(ip3d_Sig)");
+   loader->AddVariable("signalGammaCands_size");
+   loader->AddVariable("signalGammaCands_size? sigCands_dr : -0.1");
+   loader->AddVariable("signalGammaCands_size? sigCands_deta : -0.1");
+   loader->AddVariable("signalGammaCands_size? sigCands_dphi: -0.1");
+   loader->AddVariable("isolationGammaCands_size");
+   loader->AddVariable("isolationGammaCands_size? isoCands_dr: -0.1");
+   loader->AddVariable("isolationGammaCands_size? isoCands_deta: -0.1");
+   loader->AddVariable("isolationGammaCands_size? isoCands_dphi: -0.1");
  
    TFile *input_sig = TFile::Open("./outputData/skim_GluGluHToTauTau_PU200.root");
    TFile *input_bkg = TFile::Open("./outputData/skim_QCD_Flat_Pt-15to7000_PU200.root");
@@ -47,33 +47,6 @@ void runTraining()
    TTree * sigTree = (TTree*)input_sig->Get("skimmedTree");
    TTree * bkgTree = (TTree*)input_bkg->Get("skimmedTree");
 
-   sigTree->SetBranchStatus("*", 0);
-   bkgTree->SetBranchStatus("*", 0);
-
-   sigTree->SetBranchStatus("chargedIsoPtSum", 1);
-   sigTree->SetBranchStatus("neutralIsoPtSum", 1);
-   sigTree->SetBranchStatus("decayMode", 1);
-   sigTree->SetBranchStatus("leadChargedHadrCand_dxy", 1);
-   sigTree->SetBranchStatus("leadChargedHadrCand_dxysig", 1);
-   sigTree->SetBranchStatus("hasSecondaryVertex", 1);
-   sigTree->SetBranchStatus("flightLength", 1);
-   sigTree->SetBranchStatus("flightLengthSig", 1);
-   sigTree->SetBranchStatus("puCorrPtSum", 1);
-   sigTree->SetBranchStatus("pt", 1);
-   sigTree->SetBranchStatus("eta", 1);
-
-   bkgTree->SetBranchStatus("chargedIsoPtSum", 1);
-   bkgTree->SetBranchStatus("neutralIsoPtSum", 1);
-   bkgTree->SetBranchStatus("decayMode", 1);
-   bkgTree->SetBranchStatus("leadChargedHadrCand_dxy", 1);
-   bkgTree->SetBranchStatus("leadChargedHadrCand_dxysig", 1);
-   bkgTree->SetBranchStatus("hasSecondaryVertex", 1);
-   bkgTree->SetBranchStatus("flightLength", 1);
-   bkgTree->SetBranchStatus("flightLengthSig", 1);
-   bkgTree->SetBranchStatus("puCorrPtSum", 1);
-   bkgTree->SetBranchStatus("pt", 1);
-   bkgTree->SetBranchStatus("eta", 1);
- 
    loader->AddSignalTree(sigTree);
    loader->AddBackgroundTree(bkgTree);
 
@@ -82,7 +55,7 @@ void runTraining()
    //const TString optionTable_2 = 
    //   "SplitMode=Random:MixMode=SameAsSplitMode:SplitSeed=100:NormMode=EqualNumEvents:nTrain_signal=10000:nTest_signal=10000:nTrain_Background=10000:nTest_Background=10000:V=True:VerboseLevel=Debug"
    //;
-   const TString optionTable_2 = "nTrain_Background=61691:nTest_Background=61691";
+   const TString optionTable_2 = "nTrain_Background=100000:nTest_Background=100000";
    loader->PrepareTrainingAndTestTree("", "", optionTable_2);
  
    const TString methodTitle = "BDT";
