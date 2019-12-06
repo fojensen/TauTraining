@@ -86,7 +86,7 @@ void plotTrainingVariables()
    TH1D h_neutralIsoPtSum("h_neutralIsoPtSum", ";neutralIsoPtSum;#tau_{h} candidates / 1 GeV", 40, 0., 40.);
    runPoint(&h_neutralIsoPtSum, "neutralIsoPtSum", true);
    
-   TH1D h_decayMode("h_decayMode", ";decayMode;# of #tau_{h} / bin",  11, -0.5, 10.5);
+   TH1D h_decayMode("h_decayMode", ";decayMode;# of #tau_{h} / bin", 12, -0.5, 11.5);
    runPoint(&h_decayMode, "decayMode", false);
 
    TH1D h_leadChargedHadrCand_dxy("h_leadChargedHadrCand_dxy", ";TMath::Sqrt(TMath::Abs(leadChargedHadrCand_dxy));#tau_{h} candidates / 0.01", 40, 0., 0.2);

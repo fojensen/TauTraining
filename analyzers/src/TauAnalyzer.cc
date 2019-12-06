@@ -30,6 +30,8 @@ private:
    float chargedIsoPtSum;
    float neutralIsoPtSum;
    int decayMode;
+   float decayModeFinding;
+   float decayModeFindingNewDMs;
    float leadChargedHadrCand_dxy;
    float leadChargedHadrCand_dxysig;  
    bool hasSecondaryVertex;
@@ -54,7 +56,6 @@ private:
    TString labels_deepTau2017v2p1[9];
    float iso_run2017v2[8];
    float iso_deepTau2017v2p1[9];
-   float decayModeFinding;
    float drmin_jet;
    float drmin_tau_e;
    float drmin_tau_mu;
@@ -72,7 +73,8 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
  
    tree->Branch("pt", &pt, "pt/F");
    tree->Branch("eta", &eta, "eta/F");
-   tree->Branch("decayMode", &decayMode, "decayMode/I");  
+   tree->Branch("decayMode", &decayMode, "decayMode/F");
+   tree->Branch("decayModeFindingNewDMs", &decayModeFindingNewDMs, "decayModeFindingNewDMs/F");
    tree->Branch("chargedIsoPtSum", &chargedIsoPtSum, "chargedIsoPtSum/F");
    tree->Branch("neutralIsoPtSum", &neutralIsoPtSum, "neutralIsoPtSum/F");
    tree->Branch("puCorrPtSum", &puCorrPtSum, "puCorrPtSum/F");
@@ -166,12 +168,13 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
       pt = i->pt();
       eta = i->eta();
+      decayMode = i->decayMode();
       decayModeFinding = i->tauID("decayModeFinding");
+      decayModeFindingNewDMs = i->tauID("decayModeFindingNewDMs");
       chargedIsoPtSum = i->tauID("chargedIsoPtSum");
       neutralIsoPtSum = i->tauID("neutralIsoPtSum");
       puCorrPtSum = i->tauID("puCorrPtSum"); 
       photonPtSumOutsideSignalCone = i->tauID("photonPtSumOutsideSignalCone");
-      decayMode = i->decayMode();
       signalGammaCands_size = i->signalGammaCands().size();
       isolationGammaCands_size = i->isolationGammaCands().size();
       ip3d = i->ip3d();
