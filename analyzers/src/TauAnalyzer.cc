@@ -152,7 +152,8 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
          if (id==13 && dr<drmin_tau_mu) drmin_tau_mu = dr;
          if (id==15 && dr<drmin_tau_tau) drmin_tau_tau = dr;
       }
-
+      if (drmin_tau_e<0.4 || drmin_tau_mu<0.4) continue;
+  
       leadChargedHadrCand_dxy = leadChargedHadrCand_dxysig = -999.;
       if (i->leadChargedHadrCand().isNonnull()) {
          if (i->leadChargedHadrCand()->bestTrack()) {
