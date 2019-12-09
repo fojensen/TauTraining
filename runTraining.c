@@ -1,3 +1,4 @@
+#include <TCut.h>
 #include <TFile.h>
 #include <TTree.h>
 #include "TMVA/Factory.h"
@@ -8,7 +9,10 @@ void runTraining()
    TFile* outputFile = TFile::Open("TMVA.root", "RECREATE");
 
    const TString theJobName = "MVAAnalysis";
-   TMVA::Factory *factory = new TMVA::Factory(theJobName, outputFile);
+   const TString optionTable_1 = 
+      "V=False:Color=True:Silent=False:DrawProgressBar=True:AnalysisType=Classification"
+   ;
+   TMVA::Factory *factory = new TMVA::Factory(theJobName, outputFile, optionTable_1);
 
    TMVA::DataLoader * loader = new TMVA::DataLoader("dataset");
 
@@ -52,11 +56,12 @@ void runTraining()
 
    loader->SetWeightExpression("ptetaWeight", "Background");
 
-   //const TString optionTable_2 = 
-   //   "SplitMode=Random:MixMode=SameAsSplitMode:SplitSeed=100:NormMode=EqualNumEvents:nTrain_signal=10000:nTest_signal=10000:nTrain_Background=10000:nTest_Background=10000:V=True:VerboseLevel=Debug"
-   //;
-   const TString optionTable_2 = "nTrain_Background=100000:nTest_Background=100000";
-   loader->PrepareTrainingAndTestTree("", "", optionTable_2);
+   const TCut sigcut = "drmin_tau_tau<0.4";
+   const TCut bkgcut = "drmin_tau_tau>=0.4";
+   const TString optionTable_2 = 
+      "SplitMode=Random:MixMode=SameAsSplitMode:SplitSeed=100:NormMode=EqualNumEvents:nTrain_signal=10000:nTest_signal=10000:nTrain_Background=10000:nTest_Background=10000:V=False:VerboseLevel=Info"
+   ;
+   loader->PrepareTrainingAndTestTree(sigcut, bkgcut, optionTable_2);
  
    const TString methodTitle = "BDT";
    //const TString optionTable_25 = 

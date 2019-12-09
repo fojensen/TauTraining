@@ -1,15 +1,13 @@
-#include <TH1F.h>
 #include <TCut.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <iostream>
 
-void makeSkim(const TString fileTag, const bool isSignal)
+void makeSkim(const TString fileTag)
 {
    const TCut recocut = "decayModeFinding>0.5 && pt>=20. && pt<220. && TMath::Abs(eta)<3.";
    const TCut gencut = "drmin_jet<0.4 && drmin_tau_e>=0.4 && drmin_tau_mu>=0.4";
-   TCut cuts = recocut && gencut;
-   if (isSignal) cuts = cuts && TCut("drmin_tau_tau<0.4");
+   const TCut cuts = recocut && gencut;
  
    char inFile[100];
    sprintf(inFile, "./outputData/%s.root", fileTag.Data());

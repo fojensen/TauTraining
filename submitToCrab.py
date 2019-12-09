@@ -19,7 +19,6 @@ with open(infile) as json_file:
       f.write("\n")
       f.write("config.JobType.pluginName = 'Analysis'\n")
       f.write("config.JobType.psetName = './tauAnalyzer_cfg.py'\n")
-      f.write("config.JobType.pyCfgParams = ['globaltag="+str(p['globaltag'])+"']\n")
       f.write("\n")
       f.write("config.Data.inputDataset = '"+p['das']+"'\n")
       f.write("config.Data.splitting = 'Automatic'\n")
