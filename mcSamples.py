@@ -8,7 +8,7 @@ data['people'].append({
    'das': '/GluGluHToTauTau_M125_14TeV_powheg_pythia8/PhaseIISpr18AODMiniAOD-PU200_93X_upgrade2023_realistic_v5-v1/MINIAODSIM',
    'globaltag': '93X_upgrade2023_realistic_v5',
    'xs': '50.35',
-   'nEvents': '91120'
+   'nEvents': '91120',
    'nFiles': '12',
 })
 data['people'].append({
@@ -19,14 +19,14 @@ data['people'].append({
    'nEvents': '99000',
    'nFiles': '12',
 })
-data['people'].append({
-   'name': 'TTTo2L2Nu_PU200',
-   'das': '/TTTo2L2Nu_TuneCUETP8M1_14TeV-powheg-pythia8/PhaseIISpr18AODMiniAOD-PU200_93X_upgrade2023_realistic_v5-v1/MINIAODSIM',
-   'globaltag': '93X_upgrade2023_realistic_v5',
-   'xs': '90.75',
-   'nEvents': '2866568',
-   'nFiles': '321',
-})
+#data['people'].append({
+#   'name': 'TTTo2L2Nu_PU200',
+#   'das': '/TTTo2L2Nu_TuneCUETP8M1_14TeV-powheg-pythia8/PhaseIISpr18AODMiniAOD-PU200_93X_upgrade2023_realistic_v5-v1/MINIAODSIM',
+#   'globaltag': '93X_upgrade2023_realistic_v5',
+#   'xs': '90.75',
+#   'nEvents': '2866568',
+#   'nFiles': '321',
+#})
 data['people'].append({
    'name': 'TT_PU200',
    'das': '/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/PhaseIISpr18AODMiniAOD-PU200_93X_upgrade2023_realistic_v5-v2/MINIAODSIM',

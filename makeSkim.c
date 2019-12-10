@@ -5,7 +5,7 @@
 
 void makeSkim(const TString fileTag)
 {
-   const TCut recocut = "decayModeFinding>0.5 && pt>=20. && pt<220. && TMath::Abs(eta)<3.";
+   const TCut recocut = "decayModeFindingNewDMs>0.5 && pt>=20. && pt<220. && TMath::Abs(eta)<3.";
    const TCut gencut = "drmin_jet<0.4 && drmin_tau_e>=0.4 && drmin_tau_mu>=0.4";
    const TCut cuts = recocut && gencut;
  

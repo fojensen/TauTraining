@@ -59,7 +59,7 @@ void runTraining()
    const TCut sigcut = "drmin_tau_tau<0.4";
    const TCut bkgcut = "drmin_tau_tau>=0.4";
    const TString optionTable_2 = 
-      "SplitMode=Random:MixMode=SameAsSplitMode:SplitSeed=100:NormMode=EqualNumEvents:nTrain_signal=10000:nTest_signal=10000:nTrain_Background=10000:nTest_Background=10000:V=False:VerboseLevel=Info"
+      "SplitMode=Random:MixMode=SameAsSplitMode:SplitSeed=100:NormMode=EqualNumEvents:nTrain_signal=0:nTest_signal=0:nTrain_Background=100000:nTest_Background=100000:V=False:VerboseLevel=Info"
    ;
    loader->PrepareTrainingAndTestTree(sigcut, bkgcut, optionTable_2);
  

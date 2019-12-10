@@ -9,6 +9,11 @@ process.genVisTaus = cms.EDProducer("GenVisTauProducer",
    genParticleCollection = cms.InputTag("prunedGenParticles")
 )
 
+process.eventAnalyzer = cms.EDAnalyzer("EventAnalyzer",
+   tauCollection = cms.InputTag("slimmedTaus"),
+   genParticleCollection = cms.InputTag("prunedGenParticles")
+)
+
 updatedTauName = "slimmedTausNewID"
 import RecoTauTag.RecoTau.tools.runTauIdMVA as tauIdConfig
 tauIdEmbedder = tauIdConfig.TauIDEmbedder(
@@ -22,12 +27,14 @@ tauIdEmbedder.runTauID()
 process.tauAnalyzer = cms.EDAnalyzer("TauAnalyzer",
    tauCollection = cms.InputTag(updatedTauName),
    genJetCollection = cms.InputTag("slimmedGenJets"),
-   genVisTauCollection = cms.InputTag("genVisTaus:genVisTaus")
+   genVisTauCollection = cms.InputTag("genVisTaus:genVisTaus"),
+   genParticleCollection = cms.InputTag("prunedGenParticles")
 )
 
 process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring(
       "/store/mc/PhaseIISpr18AODMiniAOD/GluGluHToTauTau_M125_14TeV_powheg_pythia8/MINIAODSIM/PU200_93X_upgrade2023_realistic_v5-v1/20000/02AB313D-AA45-E811-A1B6-7CD30AB15C58.root"
+      #"/store/mc/PhaseIISpr18AODMiniAOD/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/MINIAODSIM/PU200_93X_upgrade2023_realistic_v5-v1/90000/FA267931-2E44-E811-B0F9-C4346BC80410.root"
    )
 )
 
@@ -46,8 +53,21 @@ process.options = cms.untracked.PSet(
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 
+process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
+process.printTree = cms.EDAnalyzer("ParticleTreeDrawer",
+   src = cms.InputTag("prunedGenParticles"),
+   printP4 = cms.untracked.bool(False),
+   printPtEtaPhi = cms.untracked.bool(False),
+   printVertex = cms.untracked.bool(False),
+   printStatus = cms.untracked.bool(False),
+   printIndex = cms.untracked.bool(False),
+   #status = cms.untracked.vint32(3),
+)
+
 process.mypath = cms.Sequence(
-   process.genVisTaus
+   process.eventAnalyzer
+   #* process.printTree
+   * process.genVisTaus
    * process.rerunMvaIsolationSequence
    * getattr(process,updatedTauName)
    * process.tauAnalyzer

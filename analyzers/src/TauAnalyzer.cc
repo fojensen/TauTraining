@@ -14,6 +14,7 @@
 #include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 
 class TauAnalyzer : public edm::EDAnalyzer {
 public:
@@ -24,7 +25,7 @@ private:
    edm::EDGetTokenT<std::vector<pat::Tau>> tauToken_;
    edm::EDGetTokenT<std::vector<reco::GenJet>> genJetToken_; 
    edm::EDGetTokenT<pat::CompositeCandidateCollection> genVisTauToken_;
-  
+   edm::EDGetTokenT<std::vector<reco::GenParticle>> genParticleToken_;
    TTree * tree;
    
    float chargedIsoPtSum;
@@ -60,6 +61,8 @@ private:
    float drmin_tau_e;
    float drmin_tau_mu;
    float drmin_tau_tau;
+
+   int nTaus_gen;
 };
 
 TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
@@ -67,13 +70,15 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tauToken_ = consumes<std::vector<pat::Tau>>(iConfig.getParameter<edm::InputTag>("tauCollection"));
    genJetToken_ = consumes<std::vector<reco::GenJet>>(iConfig.getParameter<edm::InputTag>("genJetCollection"));
    genVisTauToken_ = consumes<pat::CompositeCandidateCollection>(iConfig.getParameter<edm::InputTag>("genVisTauCollection"));
+   genParticleToken_ = consumes<std::vector<reco::GenParticle>>(iConfig.getParameter<edm::InputTag>("genParticleCollection"));
 
    edm::Service<TFileService> fs;
    tree = fs->make<TTree>("tree", "tree");
  
    tree->Branch("pt", &pt, "pt/F");
    tree->Branch("eta", &eta, "eta/F");
-   tree->Branch("decayMode", &decayMode, "decayMode/F");
+   tree->Branch("decayMode", &decayMode, "decayMode/I");
+   tree->Branch("decayModeFinding", &decayModeFinding, "decayModeFinding/F");
    tree->Branch("decayModeFindingNewDMs", &decayModeFindingNewDMs, "decayModeFindingNewDMs/F");
    tree->Branch("chargedIsoPtSum", &chargedIsoPtSum, "chargedIsoPtSum/F");
    tree->Branch("neutralIsoPtSum", &neutralIsoPtSum, "neutralIsoPtSum/F");
@@ -97,11 +102,12 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
 
    tree->Branch("iso_run2017v2", iso_run2017v2, "iso_run2017v2[8]/F");
    tree->Branch("iso_deepTau2017v2p1", iso_deepTau2017v2p1, "iso_deepTau2017v2p1[9]/F");
-   tree->Branch("decayModeFinding", &decayModeFinding, "decayModeFinding/F");
    tree->Branch("drmin_jet", &drmin_jet, "drmin_jet/F");   
    tree->Branch("drmin_tau_e", &drmin_tau_e, "drmin_tau_e/F");
    tree->Branch("drmin_tau_mu", &drmin_tau_mu, "drmin_tau_mu/F");
    tree->Branch("drmin_tau_tau", &drmin_tau_tau, "drmin_tau_tau/F");
+
+   tree->Branch("nTaus_gen", &nTaus_gen, "nTaus_gen/I");
 
    labels_run2017v2[0] = "inclusive";
    labels_run2017v2[1] = "byVVLooseIsolationMVArun2017v2DBoldDMwLT2017";
@@ -125,6 +131,13 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
 
 void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+   nTaus_gen = 0;
+   edm::Handle<std::vector<reco::GenParticle>> genParticles;
+   iEvent.getByToken(genParticleToken_, genParticles);
+   for (auto i = genParticles->begin(); i != genParticles->end(); ++i) {
+      if (i->isLastCopy() && std::abs(i->pdgId())==15) ++nTaus_gen;
+   }
+
    edm::Handle<std::vector<pat::Tau>> taus;
    iEvent.getByToken(tauToken_, taus);
 

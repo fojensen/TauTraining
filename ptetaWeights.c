@@ -160,30 +160,26 @@ void makeWeights()
    TH1D * h_eta_bkg = (TH1D*)h_eta->Clone("h_eta_bkg");
    TH2D * h_pteta_bkg = (TH2D*)h_pteta->Clone("h_pteta_bkg");
 
+   const TCut sigcut = "drmin_tau_tau<0.4";
+   const TCut bkgcut = "drmin_tau_tau>=0.4";
+
    TChain * c_sig = new TChain("skimmedTree");
    c_sig->Add("./outputData/skim_GluGluHToTauTau_PU200.root");
-   const int n_sig = c_sig->GetEntries();
+   const int n_sig = c_sig->GetEntries(sigcut);
    std::cout << "number of signal entries: " << n_sig << std::endl;
 
-   const TCut cut1 = "1>0";
-   const TCut cut2 = "1>0";
-   const TCut cut3 = "1>0";
-   //const TCut cut1 = "ptWeight * (1>0)";
-   //const TCut cut2 = "etaWeight * (1>0)";
-   //const TCut cut3 = "ptetaWeight * (1>0)";
-
-   c_sig->Project("h_pt_sig", "pt", cut1);
-   c_sig->Project("h_eta_sig", "TMath::Abs(eta)", cut2);
-   c_sig->Project("h_pteta_sig", "pt:TMath::Abs(eta)", cut3);
+   c_sig->Project("h_pt_sig", "pt", sigcut);
+   c_sig->Project("h_eta_sig", "TMath::Abs(eta)", sigcut);
+   c_sig->Project("h_pteta_sig", "pt:TMath::Abs(eta)", sigcut);
 
    TChain * c_bkg = new TChain("skimmedTree");
    c_bkg->Add("./outputData/skim_QCD_Flat_Pt-15to7000_PU200.root");
-   const int n_bkg = c_bkg->GetEntries();
+   const int n_bkg = c_bkg->GetEntries(bkgcut);
    std::cout << "number of background entries: " << n_bkg << std::endl;
 
-   c_bkg->Project("h_pt_bkg", "pt");
-   c_bkg->Project("h_eta_bkg", "TMath::Abs(eta)");
-   c_bkg->Project("h_pteta_bkg", "pt:TMath::Abs(eta)");
+   c_bkg->Project("h_pt_bkg", "pt", bkgcut);
+   c_bkg->Project("h_eta_bkg", "TMath::Abs(eta)", bkgcut);
+   c_bkg->Project("h_pteta_bkg", "pt:TMath::Abs(eta)", bkgcut);
 
    TH1D * w_pt = (TH1D*)h_pt_sig->Clone("w_pt");
    w_pt->Divide(h_pt_bkg);
