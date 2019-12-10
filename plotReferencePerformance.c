@@ -125,9 +125,11 @@ TGraphErrors * runPointROC(const TString tagger)
 
    TChain *c_sig = new TChain("skimmedTree");
    c_sig->Add("./outputData/skim_GluGluHToTauTau_PU200.root");
+   const TCut sigcut = "drmin_tau_tau<0.4";
 
    TChain *c_bkg =  new TChain("skimmedTree");
    c_bkg->Add("./outputData/skim_QCD_Flat_Pt-15to7000_PU200.root");
+   const TCut bkgcut = "drmin_tau_tau>=0.4";
 
    double x[nwp], y[nwp];
    double xerr[nwp], yerr[nwp];
@@ -141,11 +143,11 @@ TGraphErrors * runPointROC(const TString tagger)
          sprintf(cut, "iso_deepTau2017v2p1[%d]>0.5", i);
       }
 
-      const double num_sig = c_sig->GetEntries(TCut(cut));
-      const double denom_sig = c_sig->GetEntries();
+      const double num_sig = c_sig->GetEntries(TCut(cut) && sigcut);
+      const double denom_sig = c_sig->GetEntries(sigcut);
 
-      const double num_bkg = c_bkg->GetEntries(TCut(cut));
-      const double denom_bkg = c_bkg->GetEntries();
+      const double num_bkg = c_bkg->GetEntries(TCut(cut) && bkgcut);
+      const double denom_bkg = c_bkg->GetEntries(bkgcut);
 
       x[i] = num_sig/denom_sig;
       xerr[i] = x[i]*(1.-x[i])/denom_sig;

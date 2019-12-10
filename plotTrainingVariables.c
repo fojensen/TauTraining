@@ -1,3 +1,4 @@
+#include <TCut.h>
 #include <iostream>
 #include <TLegend.h>
 #include <TH1D.h>
@@ -32,12 +33,14 @@ void runPoint(TH1D * h, const TString var, const bool dolog=false)
 
    TChain c_sig("skimmedTree");
    c_sig.Add("./outputData/skim_GluGluHToTauTau_PU200.root");
+   const TCut sigcut = "drmin_tau_tau<0.4";
 
    TChain c_bkg("skimmedTree");
    c_bkg.Add("./outputData/skim_QCD_Flat_Pt-15to7000_PU200.root");
+   const TCut bkgcut = "drmin_tau_tau>=0.4";
  
-   const int n_sig = c_sig.Project(h_sig->GetName(), var);
-   const int n_bkg = c_bkg.Project(h_bkg->GetName(), var);
+   const int n_sig = c_sig.Project(h_sig->GetName(), var, sigcut);
+   const int n_bkg = c_bkg.Project(h_bkg->GetName(), var, bkgcut);
 
    addOverflow(h_sig);
    addOverflow(h_bkg);
@@ -128,13 +131,13 @@ void plotTrainingVariables()
    TH1D h_isolationGammaCands_size("h_isolationGammaCands_size", ";isolationGammaCands_size;#tau_{h} candidates / 1", 150, -0.5, 149.5);
    runPoint(&h_isolationGammaCands_size, "isolationGammaCands_size", true);
 
-   TH1D h_sigCands_dr("h_sigCands_dr", ";sigCands_dr;#tau_{h} candidates / 0.0325", 40, -0.25, 0.8);
+   TH1D h_sigCands_dr("h_sigCands_dr", ";sigCands_dr;#tau_{h} candidates / 0.02125", 40, -0.25, 0.6);
    runPoint(&h_sigCands_dr, "signalGammaCands_size? sigCands_dr : -0.1", false);
 
-   TH1D h_sigCands_deta("h_sigCands_deta", ";sigCands_deta;#tau_{h} candidates / 0.0325", 40, -0.25, 0.8);
+   TH1D h_sigCands_deta("h_sigCands_deta", ";sigCands_deta;#tau_{h} candidates / 0.02125", 40, -0.25, 0.6);
    runPoint(&h_sigCands_deta, "signalGammaCands_size? sigCands_deta : -0.1", false);
 
-   TH1D h_sigCands_dphi("h_sigCands_dphi", ";sigCands_dphi;#tau_{h} candidates / 0.0325", 40, -0.25, 0.8);
+   TH1D h_sigCands_dphi("h_sigCands_dphi", ";sigCands_dphi;#tau_{h} candidates / 0.02125", 40, -0.25, 0.6);
    runPoint(&h_sigCands_dphi, "signalGammaCands_size? sigCands_dphi : -0.1", false);
 
    TH1D h_isoCands_dr("h_isoCands_dr", ";isoCands_dr;#tau_{h} candidates / 0.0325", 40, -0.25, 0.8);

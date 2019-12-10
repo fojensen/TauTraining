@@ -105,7 +105,7 @@ TCanvas * drawWeights(TH1D *h_sig, TH1D *h_bkg, TH1D *h_weight, const TString va
          std::cout << "   low edge: " << h_weight->GetBinLowEdge(i) << std::endl;
       }
    }
- 
+
    return canvas;
 }
 
@@ -142,7 +142,7 @@ void makeWeights()
    //const int n_eta = 12;
    //const double x_eta[n_eta+1] = {0., 0.25, 0.5, 0.75, 1., 1.25, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3.}; 
    //TH1D * h_eta = new TH1D("h_eta", ";|#eta|;#tau_{h} candidates / 0.25", n_eta, x_eta);
-   TH1D * h_eta = new TH1D("h_eta", ";|#eta|;#tau_{h} candidates / 0.1", 30, 0., 3.);
+   TH1D * h_eta = new TH1D("h_eta", ";|#eta|;#tau_{h} candidates / 0.15", 20, 0., 3.);
    h_eta->Sumw2();
    
    const int n2_pt = 8;

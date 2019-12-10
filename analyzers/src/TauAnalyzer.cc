@@ -61,8 +61,9 @@ private:
    float drmin_tau_e;
    float drmin_tau_mu;
    float drmin_tau_tau;
-
-   int nTaus_gen;
+   float drmin_e;
+   float drmin_mu;
+   float drmin_tau;
 };
 
 TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
@@ -106,8 +107,9 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("drmin_tau_e", &drmin_tau_e, "drmin_tau_e/F");
    tree->Branch("drmin_tau_mu", &drmin_tau_mu, "drmin_tau_mu/F");
    tree->Branch("drmin_tau_tau", &drmin_tau_tau, "drmin_tau_tau/F");
-
-   tree->Branch("nTaus_gen", &nTaus_gen, "nTaus_gen/I");
+   tree->Branch("drmin_e", &drmin_e, "drmin_e/F");
+   tree->Branch("drmin_mu", &drmin_mu, "drmin_mu/F");
+   tree->Branch("drmin_tau", &drmin_tau, "drmin_tau/F");
 
    labels_run2017v2[0] = "inclusive";
    labels_run2017v2[1] = "byVVLooseIsolationMVArun2017v2DBoldDMwLT2017";
@@ -131,12 +133,8 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
 
 void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-   nTaus_gen = 0;
    edm::Handle<std::vector<reco::GenParticle>> genParticles;
    iEvent.getByToken(genParticleToken_, genParticles);
-   for (auto i = genParticles->begin(); i != genParticles->end(); ++i) {
-      if (i->isLastCopy() && std::abs(i->pdgId())==15) ++nTaus_gen;
-   }
 
    edm::Handle<std::vector<pat::Tau>> taus;
    iEvent.getByToken(tauToken_, taus);
@@ -165,7 +163,17 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
          if (id==13 && dr<drmin_tau_mu) drmin_tau_mu = dr;
          if (id==15 && dr<drmin_tau_tau) drmin_tau_tau = dr;
       }
-      if (drmin_tau_e<0.4 || drmin_tau_mu<0.4) continue;
+
+      drmin_e = drmin_mu = drmin_tau = 9.;
+      for (auto j = genParticles->begin(); j != genParticles->end(); ++j) {
+         if (j->isLastCopy()) {
+            const int id = std::abs(j->pdgId());
+            const float dr = reco::deltaR(*i, *j);
+            if (id==11 && dr<drmin_e) drmin_e = dr;
+            if (id==13 && dr<drmin_mu) drmin_mu = dr;
+            if (id==15 && dr<drmin_tau) drmin_tau = dr;
+         }
+      }
   
       leadChargedHadrCand_dxy = leadChargedHadrCand_dxysig = -999.;
       if (i->leadChargedHadrCand().isNonnull()) {
@@ -244,13 +252,13 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
             iso_run2017v2[j] = i->tauID(labels_run2017v2[j]);
          }
       }
-       for (int j = 0; j < 9; ++j) {
+      for (int j = 0; j < 9; ++j) {
          if (j==0) {
             iso_deepTau2017v2p1[j] = 1.;
          } else {
             iso_deepTau2017v2p1[j] = i->tauID(labels_deepTau2017v2p1[j]);
-         }  
-      }       
+         }
+      }  
  
       tree->Fill();
    }
