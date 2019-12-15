@@ -1,5 +1,6 @@
 #include <TPaveText.h>
 #include <TGraphAsymmErrors.h>
+#include <TGraphErrors.h>
 #include <iostream>
 #include <TCut.h>
 #include <TCanvas.h>
@@ -7,8 +8,102 @@
 #include <TFile.h>
 #include <TH1D.h>
 #include <TTree.h>
+#include <TChain.h>
 
-void plotROC()
+TGraphErrors * runPointROC(const TString tagger)
+{
+   std::cout << "Running " << tagger << std::endl;
+   int nwp_ = 1;
+   if (tagger=="run2017v2") {
+      nwp_ = 8;
+   } else if (tagger=="deepTau2017v2p1") {
+      nwp_ = 9;
+   }
+   const int nwp = nwp_;
+
+   TChain *c_sig = new TChain("skimmedTree");
+   c_sig->Add("./outputData/skim_WToLNu_2J.root");
+   c_sig->Add("./outputData/skim_DYToLL-M-50_2J.root");
+   c_sig->Add("./outputData/skim_GluGluHToTauTau.root");
+   c_sig->Add("./outputData/skim_VBFHToTauTau.root");
+   const TCut sigcut = "drmin_tau_tau<0.4";
+
+   TChain *c_bkg =  new TChain("skimmedTree");
+   c_bkg->Add("./outputData/skim_QCD_Flat_Pt-15to7000.root");
+   const TCut bkgcut = "drmin_tau_tau>=0.4";
+
+   double x[nwp], y[nwp];
+   double xerr[nwp], yerr[nwp];
+
+   for (int i = 0; i < nwp; ++i) {
+
+      char cut[100];
+      if (tagger=="run2017v2") {
+         sprintf(cut, "iso_run2017v2[%d]>0.5", i);
+      } else if (tagger=="deepTau2017v2p1") {
+         sprintf(cut, "iso_deepTau2017v2p1[%d]>0.5", i);
+      }
+
+      const double num_sig = c_sig->GetEntries(TCut(cut) && sigcut);
+      const double denom_sig = c_sig->GetEntries(sigcut);
+
+      const double num_bkg = c_bkg->GetEntries(TCut(cut) && bkgcut);
+      const double denom_bkg = c_bkg->GetEntries(bkgcut);
+
+      x[i] = num_sig/denom_sig;
+      xerr[i] = x[i]*(1.-x[i])/denom_sig;
+      xerr[i] = sqrt(xerr[i]);
+      y[i] = num_bkg/denom_bkg;
+      yerr[i] = y[i]*(1.-y[i])/denom_bkg;
+      yerr[i] = sqrt(yerr[i]);
+      
+      std::cout << "wp " << i << std::endl;
+      std::cout << "   x: " << x[i] << " +- " << xerr[i] << std::endl;
+      std::cout << "   y: " << y[i] << " +- " << yerr[i] << std::endl;
+   }
+
+   TGraphErrors * g = new TGraphErrors(nwp, x, y, xerr, yerr);
+   char title[100];
+   sprintf(title, "g_%s", tagger.Data());
+   g->SetName(title);
+   g->SetTitle(";signal efficiency;background efficiency");
+  
+   return g; 
+}
+
+TCanvas * plotROC(const TCut ptcut, const TCut pttag)
+{
+   TFile * f = TFile::Open("./TMVA.root");
+   TTree * tree = (TTree*)f->Get("dataset/TestTree");
+   const TCut sigcut = "classID==0";
+   const TCut bkgcut = "classID==1";
+   
+   TH1D * h_sig = new TH1D("h_sig", "", 100, -1., 1.);
+   TH1D * h_bkg = (TH1D*)h_sig->Clone("h_bkg");
+   const double n_sig = tree->Project("h_sig", "BDT", sigcut && ptcut);
+   const double n_bkg = tree->Project("h_bkg", "BDT", bkgcut && ptcut);
+
+   TGraphErrors * g_roc = new TGraphErrors(100);
+   for (int i = 0; i < 100; ++i) {
+      const double eff_sig = h_sig->Integral(i, 101)/n_sig;
+      const double eff_bkg = h_bkg->Integral(i, 101)/n_bkg;
+      g_roc->SetPoint(i, eff_sig, eff_bkg);
+      g_roc->SetPointError(i, 0., 0.);
+   }
+
+   TCanvas * c = new TCanvas("c_"+pttag, pttag, 400, 400);
+   g_roc->SetMarkerStyle(20);
+   g_roc->Draw("APE");
+   g_roc->GetXaxis()->SetRangeUser(0., 1.);
+   g_roc->Draw("APE");
+   c->Update();   
+   g_roc->SetMaximum(1.);
+   g_roc->SetMinimum(1e-4);
+   c->SetLogy();
+   return c;
+}
+
+void plotROCInclusive()
 {
    TFile * f = TFile::Open("./TMVA.root");
    TH1D* h_test = (TH1D*)f->Get("dataset/Method_BDT/BDT/MVA_BDT_effBvsS");
@@ -41,13 +136,28 @@ void plotROC()
 
    TH1D *h_auc = (TH1D*)f->Get("dataset/Method_BDT/BDT/MVA_BDT_rejBvsS");
    const float auc = h_auc->Integral("width");
-   TPaveText *pt = new TPaveText(.85, .9, .975, .975, "NDC");
+   TPaveText *pt = new TPaveText(.8, .9, .925, .975, "NDC");
    pt->SetBorderSize(0);
    pt->SetFillColor(0);
    char buffer2[100];
    sprintf(buffer2, "auc: %.3f", auc);
    pt->AddText(buffer2);
    pt->Draw();
+
+   TGraphErrors * g_run2017v2 = runPointROC("run2017v2");
+   TGraphErrors * g_deepTau2017v2p1 = runPointROC("deepTau2017v2p1");
+   g_run2017v2->SetMarkerStyle(20);
+   g_run2017v2->SetMarkerColor(8);
+   g_deepTau2017v2p1->SetMarkerStyle(20);
+   g_deepTau2017v2p1->SetMarkerColor(9);
+   g_run2017v2->Draw("PE, SAME");
+   g_deepTau2017v2p1->Draw("PE, SAME");
+
+   TLegend *l2 = new TLegend(0.5, 0.2, 0.875, 0.3);
+   l2->SetBorderSize(0);
+   l2->AddEntry(g_run2017v2, "run2017v2", "P");
+   l2->AddEntry(g_deepTau2017v2p1, "deepTau2017v2p1", "P");
+   l2->Draw();
 
    c->SaveAs("./plots/roc.pdf");
 }
@@ -102,49 +212,22 @@ TGraphAsymmErrors* plotEff_runPoint(const TCut wp, const TCut sigbkg, const TStr
    TFile * f = TFile::Open("./TMVA.root");
    TTree * t = (TTree*)f->Get("dataset/TestTree");
 
-   int ntemp;
-   TString title;
+   TH1D *h_num, *h_den;
    TString var_;
-   if (var=="pt") {
-      ntemp = 9;
-      title = ";p_{T} [GeV];efficiency";
+   TString title;
+   if (var == "pt") {
+      h_num = new TH1D("h_pt_num", ";p_{T} [GeV];efficiency", 20, 20., 220.);
+      h_den = (TH1D*)h_num->Clone("h_pt_denom");
       var_ = "pt";
+      title = ";p_{T} [GeV];efficiency";
    } else if (var=="eta") {
-       ntemp = 6;
-       title = ";|#eta|;efficiency";
-       var_ = "TMath::Abs(eta)";
+      h_num = new TH1D("h_eta_num", ";|#eta|;efficiency", 10, 0., 3.);
+      h_den = (TH1D*)h_num->Clone("h_eta_den");
+      var_ = "TMath::Abs(eta)";
+      title = ";|#eta|;efficiency";
    } else {
       return 0;
    }
-   const int n = ntemp;
-   double x[n+1];
-   if (var=="pt") {
-      x[0] = 20.;
-      x[1] = 25.;
-      x[2] = 35.;
-      x[3] = 50.;
-      x[4] = 70.;
-      x[5] = 95.;
-      x[6] = 125.;
-      x[7] = 160.;
-      x[8] = 200.;
-      x[9] = 245.;
-   }
-   if (var=="eta") {
-      x[0] = 0.;
-      x[1] = 0.5;
-      x[2] = 1.;
-      x[3] = 1.5;
-      x[4] = 2.;
-      x[5] = 2.5;
-      x[6] = 3.;
-   }
-
-   const TString name_num = "h_num_"+name+"_"+var;
-   TH1D * h_num = new TH1D(name_num, ";;", n, x);
-
-   const TString name_den = "h_den_"+name+"_"+var;
-   TH1D * h_den = (TH1D*)h_num->Clone(name_den);
  
    const double n_den = t->Project(h_den->GetName(), var_, sigbkg);
    const double n_num = t->Project(h_num->GetName(), var_, sigbkg && wp);
@@ -172,11 +255,11 @@ void plotEff(const TString var)
    const TCut bkg = "classID==1";
 
    char wp90[100];
-   sprintf(wp90, "BDT>=%f", getWP(0.865891));
+   sprintf(wp90, "BDT>=%f", getWP(0.837238));
    const TCut wp_loose = TCut(wp90);
 
    char wp40[100];
-   sprintf(wp40, "BDT>=%f", getWP(0.307306));
+   sprintf(wp40, "BDT>=%f", getWP(0.294128));
    const TCut wp_tight = TCut(wp40);
 
    TGraphAsymmErrors * g_sig_loose = plotEff_runPoint(wp_loose, sig, "g_sig_loose", var);
@@ -211,8 +294,8 @@ void plotEff(const TString var)
    TLegend * l = new TLegend(0.225, 0.175, 0.825, 0.3);
    l->SetNColumns(4);   
    l->SetBorderSize(0);
-   l->AddEntry(g_sig_loose, "sig 87%", "P");
-   l->AddEntry(g_sig_tight, "sig 31%", "P");
+   l->AddEntry(g_sig_loose, "sig 84%", "P");
+   l->AddEntry(g_sig_tight, "sig 29%", "P");
    l->AddEntry(g_bkg_loose, "bkg loose", "P");
    l->AddEntry(g_bkg_tight, "bkg tight", "P");
    l->Draw();
@@ -223,7 +306,7 @@ void plotEff(const TString var)
 void plotTrainingPerformance()
 {
    plotMVA();
-   plotROC();
+   plotROCInclusive();
    plotEff("pt");
    plotEff("eta");
 }

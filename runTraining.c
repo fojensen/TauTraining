@@ -10,7 +10,7 @@ void runTraining()
 
    const TString theJobName = "MVAAnalysis";
    const TString optionTable_1 = 
-      "V=False:Color=True:Silent=False:DrawProgressBar=True:AnalysisType=Classification"
+      "V=False:Color=True:Transformations=I:Silent=False:DrawProgressBar=True:AnalysisType=Classification"
    ;
    TMVA::Factory *factory = new TMVA::Factory(theJobName, outputFile, optionTable_1);
 
@@ -44,22 +44,36 @@ void runTraining()
    loader->AddVariable("isolationGammaCands_size? isoCands_dr: -0.1");
    loader->AddVariable("isolationGammaCands_size? isoCands_deta: -0.1");
    loader->AddVariable("isolationGammaCands_size? isoCands_dphi: -0.1");
- 
-   TFile *input_sig = TFile::Open("./outputData/skim_GluGluHToTauTau_PU200.root");
-   TFile *input_bkg = TFile::Open("./outputData/skim_QCD_Flat_Pt-15to7000_PU200.root");
+   loader->AddVariable("ecalEnergy/(ecalEnergy+hcalEnergy)");
+   loader->AddVariable("leadingTrackNormChi2"); 
+   
+   TFile *input_sig1 = TFile::Open("./outputData/skim_WToLNu_2J.root");
+   TTree * sigTree1 = (TTree*)input_sig1->Get("skimmedTree");
+   loader->AddSignalTree(sigTree1);
 
-   TTree * sigTree = (TTree*)input_sig->Get("skimmedTree");
+   TFile *input_sig2 = TFile::Open("./outputData/skim_DYToLL-M-50_2J.root");
+   TTree * sigTree2 = (TTree*)input_sig2->Get("skimmedTree");
+   loader->AddSignalTree(sigTree2);
+
+   TFile *input_sig3 = TFile::Open("./outputData/skim_GluGluHToTauTau.root");
+   TTree * sigTree3 = (TTree*)input_sig3->Get("skimmedTree");
+   loader->AddSignalTree(sigTree3);
+   
+   TFile *input_sig4 = TFile::Open("./outputData/skim_VBFHToTauTau.root");
+   TTree * sigTree4 = (TTree*)input_sig4->Get("skimmedTree");
+   loader->AddSignalTree(sigTree4);
+
+   TFile *input_bkg = TFile::Open("./outputData/skim_QCD_Flat_Pt-15to7000.root");
    TTree * bkgTree = (TTree*)input_bkg->Get("skimmedTree");
-
-   loader->AddSignalTree(sigTree);
    loader->AddBackgroundTree(bkgTree);
 
    loader->SetWeightExpression("ptetaWeight", "Background");
 
    const TCut sigcut = "drmin_tau_tau<0.4";
    const TCut bkgcut = "drmin_tau_tau>=0.4";
+
    const TString optionTable_2 = 
-      "SplitMode=Random:MixMode=SameAsSplitMode:SplitSeed=100:NormMode=EqualNumEvents:nTrain_signal=0:nTest_signal=0:nTrain_Background=100000:nTest_Background=100000:V=False:VerboseLevel=Info"
+      "SplitMode=Random:MixMode=SameAsSplitMode:SplitSeed=100:NormMode=EqualNumEvents:nTrain_signal=0:nTest_signal=0:nTrain_Background=200000:nTest_Background=200000:V=False:VerboseLevel=Info"
    ;
    loader->PrepareTrainingAndTestTree(sigcut, bkgcut, optionTable_2);
  

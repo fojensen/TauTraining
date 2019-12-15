@@ -11,9 +11,9 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/Math/interface/LorentzVector.h"
 typedef math::PtEtaPhiMLorentzVectorD PolarLorentzVector;
-//#include <TTree.h>
-//#include "FWCore/ServiceRegistry/interface/Service.h"
-//#include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include <TTree.h>
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
 class GenVisTauProducer : public edm::EDProducer {
@@ -22,19 +22,18 @@ public:
 private:
    void produce(edm::Event&, const edm::EventSetup&) override;
    edm::EDGetTokenT<std::vector<reco::GenParticle>> genParticleTok_;
- /*  TTree * tree;
+  TTree * tree;
    double leadvis_pt, leadvis_eta, leadvis_phi, leadvis_mass;
    double leadinv_pt, leadinv_eta, leadinv_phi, leadinv_mass;
    double sublvis_pt, sublvis_eta, sublvis_phi, sublvis_mass;
    double sublinv_pt, sublinv_eta, sublinv_phi, sublinv_mass;
    int visPlus_n, invPlus_n, visMinus_n, invMinus_n;
-   double photon_pt, photon_eta, photon_phi;
    int leadvis_pdgid, sublvis_pdgid;
    int dm;
    double vismass, mass;
    double visvisdr, leadvisphotondr, subleadvisphotondr;
    //signal
-   double leadphotondr, subleadphotondr;*/
+   double leadphotondr, subleadphotondr;
 };
 
 GenVisTauProducer::GenVisTauProducer(const edm::ParameterSet& iConfig)
@@ -44,7 +43,7 @@ GenVisTauProducer::GenVisTauProducer(const edm::ParameterSet& iConfig)
    produces<pat::CompositeCandidateCollection>("genVisTaus");
    produces<pat::CompositeCandidateCollection>("genInvTaus");
 
- /*  edm::Service<TFileService> fs;
+   edm::Service<TFileService> fs;
    tree = fs->make<TTree>("tree", "tree");
    // lead (visible) daughter
    tree->Branch("leadvis_pt", &leadvis_pt, "leadvis_pt/D");
@@ -73,10 +72,6 @@ GenVisTauProducer::GenVisTauProducer(const edm::ParameterSet& iConfig)
    tree->Branch("invPlus_n", &invPlus_n, "invPlus_n/I");
    tree->Branch("visMinus_n", &visMinus_n, "visMinus_n/I");
    tree->Branch("invMinus_n", &invMinus_n, "invMinus_n/I"); 
-   // photon
-   tree->Branch("photon_pt", &photon_pt, "photon_pt/D");
-   tree->Branch("photon_eta", &photon_eta, "photon_eta/D");
-   tree->Branch("photon_phi", &photon_phi, "photon_phi/D");*/
 }
 
 void GenVisTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -100,17 +95,6 @@ void GenVisTauProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
    edm::Handle<std::vector<reco::GenParticle>> genParticles;
    iEvent.getByToken(genParticleTok_, genParticles);
  
-/*   photon_pt = photon_eta = 0.;
-   for (auto i = genParticles->begin(); i != genParticles->end(); ++i) {
-      if (i->pdgId()==22 && i->mother()) {
-         if (std::abs(i->mother()->pdgId())==4000015) {
-            photon_pt = i->pt();
-            photon_eta = i->eta();
-            photon_phi = i->phi();
-         }
-      }
-   }*/
-
  //  invMinus_n = visMinus_n = invPlus_n = visPlus_n = 0;
    for (auto i = genParticles->begin(); i != genParticles->end(); ++i) {
       const int id = std::abs(i->pdgId());

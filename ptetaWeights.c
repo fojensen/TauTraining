@@ -10,6 +10,7 @@
 
 void addWeights()
 {
+   std::cout << "addWeights" << std::endl;
    TFile * f_w = TFile::Open("./ptetaWeights.root");
    TH1D * w_pt = (TH1D*)f_w->Get("w_pt");
    TH1D * w_eta = (TH1D*)f_w->Get("w_eta");
@@ -22,7 +23,7 @@ void addWeights()
    TH1D * w_eta_temp = (TH1D*)w_eta->Clone("w_eta_temp");
    TH2D * w_pteta_temp = (TH2D*)w_pteta->Clone("w_pteta_temp");
 
-   TFile * f = TFile::Open("./outputData/skim_QCD_Flat_Pt-15to7000_PU200.root", "UPDATE");
+   TFile * f = TFile::Open("./outputData/skim_QCD_Flat_Pt-15to7000.root", "UPDATE");
    TTree * t = (TTree*)f->Get("skimmedTree");
    
    float ptWeight = 0.;
@@ -61,6 +62,7 @@ void addWeights()
 
 TCanvas * drawWeights(TH1D *h_sig, TH1D *h_bkg, TH1D *h_weight, const TString var)
 {
+   std::cout << "drawWeights" << std::endl;
    TCanvas * canvas = new TCanvas("canvas_"+var, "drawWeights", 800, 400);
    canvas->Divide(2, 1);
 
@@ -111,6 +113,7 @@ TCanvas * drawWeights(TH1D *h_sig, TH1D *h_bkg, TH1D *h_weight, const TString va
 
 TCanvas * draw2DWeights(TH2D *h)
 {
+   std::cout << "draw2DWeights" << std::endl;
    TCanvas * canvas = new TCanvas("canvas", "draw2DWeights", 800, 800);
    canvas->SetLogy();
    h->SetMarkerSize(1);
@@ -120,35 +123,34 @@ TCanvas * draw2DWeights(TH2D *h)
 
    for (int i = 1; i <= h->GetNbinsX(); ++i) {
       for (int j = 1; j <= h->GetNbinsY(); ++j) {
-         double y = h->GetBinContent(i, j);
-         double yerr = h->GetBinError(i, j);
-         if (yerr/y>0.05) std::cout << "large error in bin " << i << " " << j <<  " | " << yerr/y << std::endl;
+         if (h->GetBinContent(i, j)) {
+            const double y = h->GetBinContent(i, j);
+            double yerr = h->GetBinError(i, j);
+            const double rel = yerr/y;
+            std::cout << y << " " << yerr << " " << rel << std::endl;
+            if (rel>0.05) {
+               std::cout << "large relative error! bin " << i << "," << j << std::endl;
+            }
+         }
       }
    }
-
    return canvas;
 }
 
 void makeWeights()
 {
+   std::cout << "makeWeights" << std::endl;
    gStyle->SetPaintTextFormat("4.2f");
 
-   //const int n_pt = 13;
-   //const double x_pt[n_pt+1] = {20., 25., 30., 35., 45., 55., 65., 80., 95., 110., 130., 160., 170., 220.};
-   //TH1D * h_pt = new TH1D("h_pt", ";p_{T} [GeV];#tau_{h} candidates / bin", n_pt, x_pt);
    TH1D * h_pt = new TH1D("h_pt", ";p_{T} [GeV];#tau_{h} candidates / 10 GeV", 20, 20., 220.);
    h_pt->Sumw2();
-   
-   //const int n_eta = 12;
-   //const double x_eta[n_eta+1] = {0., 0.25, 0.5, 0.75, 1., 1.25, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3.}; 
-   //TH1D * h_eta = new TH1D("h_eta", ";|#eta|;#tau_{h} candidates / 0.25", n_eta, x_eta);
-   TH1D * h_eta = new TH1D("h_eta", ";|#eta|;#tau_{h} candidates / 0.15", 20, 0., 3.);
+   TH1D * h_eta = new TH1D("h_eta", ";|#eta|;#tau_{h} candidates / 0.1", 30, 0., 3.);
    h_eta->Sumw2();
    
-   const int n2_pt = 8;
-   const double x2_pt[n2_pt+1] = {20., 30., 40., 50., 60., 70., 80., 95., 220.};
-   const int n2_eta = 2;
-   const double x2_eta[n2_eta+1] = {0., 1.5, 3.};
+   const int n2_pt = 11;
+   const double x2_pt[n2_pt+1] = {20., 30., 40., 50., 60., 70., 80., 90., 100., 110., 120., 220.};
+   const int n2_eta = 3;
+   const double x2_eta[n2_eta+1] = {0., 0.75, 1.5, 3.};
    TH2D * h_pteta = new TH2D("h_pteta", ";|#eta|;p_{T} [GeV]", n2_eta, x2_eta, n2_pt, x2_pt);
    h_pteta->Sumw2();
 
@@ -164,7 +166,10 @@ void makeWeights()
    const TCut bkgcut = "drmin_tau_tau>=0.4";
 
    TChain * c_sig = new TChain("skimmedTree");
-   c_sig->Add("./outputData/skim_GluGluHToTauTau_PU200.root");
+   c_sig->Add("./outputData/skim_WToLNu_2J.root");
+   c_sig->Add("./outputData/skim_DYToLL-M-50_2J.root");
+   c_sig->Add("./outputData/skim_GluGluHToTauTau.root");
+   c_sig->Add("./outputData/skim_VBFHToTauTau.root");
    const int n_sig = c_sig->GetEntries(sigcut);
    std::cout << "number of signal entries: " << n_sig << std::endl;
 
@@ -173,7 +178,7 @@ void makeWeights()
    c_sig->Project("h_pteta_sig", "pt:TMath::Abs(eta)", sigcut);
 
    TChain * c_bkg = new TChain("skimmedTree");
-   c_bkg->Add("./outputData/skim_QCD_Flat_Pt-15to7000_PU200.root");
+   c_bkg->Add("./outputData/skim_QCD_Flat_Pt-15to7000.root");
    const int n_bkg = c_bkg->GetEntries(bkgcut);
    std::cout << "number of background entries: " << n_bkg << std::endl;
 
@@ -212,6 +217,7 @@ void makeWeights()
 
 void ptetaWeights()
 {
+   std::cout << "draw2DWeights" << std::endl;
    makeWeights();
    addWeights();
 }

@@ -26,59 +26,64 @@ double addUnderflow(TH1D *h)
    return y;
 }
 
-void runPoint(TH1D * h, const TString var, const bool dolog=false)
+void runPoint(TH1D * htemp, const TString var, const bool dolog=false)
 {
-   TH1D * h_sig = (TH1D*)h->Clone(TString(h->GetName())+"_sig");
-   TH1D * h_bkg = (TH1D*)h->Clone(TString(h->GetName())+"_bkg");
+   const int n = 5;
+   TString filetag[n];
+   TCut cuts[n];
+   filetag[0] = "WToLNu_2J";            cuts[0] = "drmin_tau_tau<0.4";
+   filetag[1] = "DYToLL-M-50_2J";       cuts[1] = "drmin_tau_tau<0.4";
+   filetag[2] = "GluGluHToTauTau";      cuts[2] = "drmin_tau_tau<0.4";
+   filetag[3] = "VBFHToTauTau";         cuts[3] = "drmin_tau_tau<0.4";
+   filetag[4] = "QCD_Flat_Pt-15to7000"; cuts[4] = "drmin_tau_tau>=0.4";
 
-   TChain c_sig("skimmedTree");
-   c_sig.Add("./outputData/skim_GluGluHToTauTau_PU200.root");
-   const TCut sigcut = "drmin_tau_tau<0.4";
+   TH1D * h[n];
+   for (int i = 0; i < n; ++i) {
+      const TString hname = "h_"+TString(htemp->GetName())+"_"+TString::Itoa(i, 10);
+      h[i] = (TH1D*)htemp->Clone(hname);
+      TChain chain("skimmedTree");
+      char buffer[100];
+      sprintf(buffer, "./outputData/skim_%s.root", filetag[i].Data()); 
+      chain.Add(buffer);
+      if (chain.GetEntries()) {
+         const double nentries = chain.Project(hname, var, cuts[i]);
+         std::cout << filetag[i] << " has " << nentries << " entries." << std::endl;
+         addOverflow(h[i]);
+         addUnderflow(h[i]);
+         h[i]->Scale(1./nentries);
+         h[i]->SetLineWidth(2);
+         h[i]->SetLineColor(3+i);
+      }
+   }
+   h[2]->SetLineColor(2);
 
-   TChain c_bkg("skimmedTree");
-   c_bkg.Add("./outputData/skim_QCD_Flat_Pt-15to7000_PU200.root");
-   const TCut bkgcut = "drmin_tau_tau>=0.4";
- 
-   const int n_sig = c_sig.Project(h_sig->GetName(), var, sigcut);
-   const int n_bkg = c_bkg.Project(h_bkg->GetName(), var, bkgcut);
-
-   addOverflow(h_sig);
-   addOverflow(h_bkg);
-   addUnderflow(h_sig);
-   addUnderflow(h_bkg);
-
-   h_sig->Scale(1./n_sig);
-   h_bkg->Scale(1./n_bkg);
+   TCanvas * canvas = new TCanvas("canvas_"+var, var, 400, 400);
+   double max = 0.;
+   for (int i = 0; i < n; ++i) {
+      if (h[i]->GetMaximum()>max) max = h[i]->GetMaximum();
+      h[i]->Draw("HIST, E, SAME");      
+   }
    
-   h_sig->SetLineWidth(2);
-   h_sig->SetLineColor(8);
-   h_sig->SetStats(0);
-   h_bkg->SetLineWidth(2);
-   h_bkg->SetLineColor(9);
-
-   TCanvas * c = new TCanvas("c_"+var, var, 400, 400);
-   h_sig->Draw("HIST, E");
-   h_bkg->Draw("HIST, E, SAME");
-   
-   const double max = TMath::Max(h_sig->GetMaximum(), h_bkg->GetMaximum());
-   h_sig->SetMinimum(0.);
-   h_sig->SetMaximum(1.1*max);
+   h[0]->SetMinimum(0.);
+   h[0]->SetMaximum(1.1*max);
+   h[0]->SetStats(0);
    if (dolog) {
-      h_sig->SetMaximum(1.);
-      h_sig->SetMinimum(1.e-4);
-      c->SetLogy();
+      h[0]->SetMaximum(1.);
+      h[0]->SetMinimum(1.e-4);
+      canvas->SetLogy();
    }
 
-   TLegend * l = new TLegend(0.5, 0.8, 0.875, 0.875);
+   TLegend * l = new TLegend(0.25, 0.8, 0.875, 0.875);
    l->SetBorderSize(0);
-   l->SetNColumns(2);
-   l->AddEntry(h_sig, "#tau_{h}", "L");
-   l->AddEntry(h_bkg, "jet", "L");
+   l->SetNColumns(3);
+   for (int i = 0; i < n; ++i) {
+      l->AddEntry(h[i], filetag[i], "L");
+   }
    l->Draw();
 
    char hname[100];
-   sprintf(hname, "./plots/dists_%s.pdf", h->GetName());
-   c->SaveAs(hname);
+   sprintf(hname, "./plots/dists_%s.pdf", htemp->GetName());
+   canvas->SaveAs(hname);
 }
 
 void plotTrainingVariables()
@@ -107,13 +112,13 @@ void plotTrainingVariables()
    TH1D h_flightLengthSig("h_flightLengthSig", ";TMath::Abs(flightLengthSig);#tau_{h} candidates / bin", 40, -0.25, 10.);
    runPoint(&h_flightLengthSig, "hasSecondaryVertex? TMath::Abs(flightLengthSig): -0.1", true);
 
-   TH1D h_puCorrPtSum("h_puCorrPtSum", ";puCorrPtSum;#tau_{h} candidates / 6.25 GeV", 40, 0., 250.);
+   TH1D h_puCorrPtSum("h_puCorrPtSum", ";puCorrPtSum;#tau_{h} candidates / 10 GeV", 30, 0., 300.);
    runPoint(&h_puCorrPtSum, "puCorrPtSum", true);
  
-   TH1D h_pt("h_pt", ";pt;#tau_{h} candidates / 5 GeV", 40, 20., 220.);
+   TH1D h_pt("h_pt", ";pt;#tau_{h} candidates / 10 GeV", 20, 20., 220.);
    runPoint(&h_pt, "pt", true);
 
-   TH1D h_eta("h_eta", ";TMath::Abs(eta);#tau_{h} candidates / 0.075", 40, 0., 3.);
+   TH1D h_eta("h_eta", ";TMath::Abs(eta);#tau_{h} candidates / 0.2", 15, 0., 3.);
    runPoint(&h_eta, "TMath::Abs(eta)", false);
 
    TH1D h_photonPtSumOutsideSignalCone("h_photonPtSumOutsideSignalCone", ";photonPtSumOutsideSignalCone;#tau_{h} candidates / 0.25 GeV", 40, 0., 10.);
@@ -131,22 +136,28 @@ void plotTrainingVariables()
    TH1D h_isolationGammaCands_size("h_isolationGammaCands_size", ";isolationGammaCands_size;#tau_{h} candidates / 1", 150, -0.5, 149.5);
    runPoint(&h_isolationGammaCands_size, "isolationGammaCands_size", true);
 
-   TH1D h_sigCands_dr("h_sigCands_dr", ";sigCands_dr;#tau_{h} candidates / 0.02125", 40, -0.25, 0.6);
-   runPoint(&h_sigCands_dr, "signalGammaCands_size? sigCands_dr : -0.1", false);
+   TH1D h_sigCands_dr("h_sigCands_dr", ";sigCands_dr;#tau_{h} candidates / 0.02", 20, -0.1, 0.3);
+   runPoint(&h_sigCands_dr, "signalGammaCands_size? sigCands_dr : -0.05", false);
 
-   TH1D h_sigCands_deta("h_sigCands_deta", ";sigCands_deta;#tau_{h} candidates / 0.02125", 40, -0.25, 0.6);
-   runPoint(&h_sigCands_deta, "signalGammaCands_size? sigCands_deta : -0.1", false);
+   TH1D h_sigCands_deta("h_sigCands_deta", ";sigCands_deta;#tau_{h} candidates / 0.02", 20, -0.1, 0.3);
+   runPoint(&h_sigCands_deta, "signalGammaCands_size? sigCands_deta : -0.05", false);
 
-   TH1D h_sigCands_dphi("h_sigCands_dphi", ";sigCands_dphi;#tau_{h} candidates / 0.02125", 40, -0.25, 0.6);
-   runPoint(&h_sigCands_dphi, "signalGammaCands_size? sigCands_dphi : -0.1", false);
+   TH1D h_sigCands_dphi("h_sigCands_dphi", ";sigCands_dphi;#tau_{h} candidates / 0.02", 20, -0.1, 0.3);
+   runPoint(&h_sigCands_dphi, "signalGammaCands_size? sigCands_dphi : -0.05", false);
 
-   TH1D h_isoCands_dr("h_isoCands_dr", ";isoCands_dr;#tau_{h} candidates / 0.0325", 40, -0.25, 0.8);
-   runPoint(&h_isoCands_dr, "isolationGammaCands_size? isoCands_dr : -0.1", false);
+   TH1D h_isoCands_dr("h_isoCands_dr", ";isoCands_dr;#tau_{h} candidates / 0.028", 25, -0.1, 0.6);
+   runPoint(&h_isoCands_dr, "isolationGammaCands_size? isoCands_dr : -0.05", false);
 
-   TH1D h_isoCands_deta("h_isoCands_deta", ";isoCands_deta;#tau_{h} candidates / 0.0325", 40, -0.25, 0.8);
-   runPoint(&h_isoCands_deta, "isolationGammaCands_size? isoCands_deta : -0.1", false);
+   TH1D h_isoCands_deta("h_isoCands_deta", ";isoCands_deta;#tau_{h} candidates / 0.028", 25, -0.1, 0.6);
+   runPoint(&h_isoCands_deta, "isolationGammaCands_size? isoCands_deta : -0.05", false);
 
-   TH1D h_isoCands_dphi("h_isoCands_dphi", ";isoCands_dphi;#tau_{h} candidates / 0.0325", 40, -0.25, 0.8);
-   runPoint(&h_isoCands_dphi, "isolationGammaCands_size? isoCands_dphi : -0.1", false);
+   TH1D h_isoCands_dphi("h_isoCands_dphi", ";isoCands_dphi;#tau_{h} candidates / 0.0285", 25, -0.1, 0.6);
+   runPoint(&h_isoCands_dphi, "isolationGammaCands_size? isoCands_dphi : -0.05", false);
+
+   TH1D h_leadingTrackNormChi2("h_leadingTrackNormChi2", ";leadingTrackNormChi2;", 40, 0., 100.);
+   runPoint(&h_leadingTrackNormChi2, "leadingTrackNormChi2", false);
+
+   TH1D h_ecalhcalEnergy("h_ecalhcalEnergy", ";ecalEnergy/(ecalEnergy+hcalEnergy);", 40, 0., 1.);
+   runPoint(&h_ecalhcalEnergy, "ecalEnergy/(ecalEnergy+hcalEnergy)", false);
 }
 

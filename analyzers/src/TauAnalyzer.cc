@@ -53,6 +53,10 @@ private:
    float isoCands_deta;
    float isoCands_dphi;
 
+   float ecalEnergy;
+   float hcalEnergy;
+   float leadingTrackNormChi2;
+
    TString labels_run2017v2[8];
    TString labels_deepTau2017v2p1[9];
    float iso_run2017v2[8];
@@ -64,6 +68,8 @@ private:
    float drmin_e;
    float drmin_mu;
    float drmin_tau;
+
+   int nTaus_gen;
 };
 
 TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
@@ -101,6 +107,10 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("isoCands_deta", &isoCands_deta, "isoCands_deta/F");
    tree->Branch("isoCands_dphi", &isoCands_dphi, "isoCands_dphi/F");
 
+   tree->Branch("ecalEnergy", &ecalEnergy, "ecalEnergy/F");
+   tree->Branch("hcalEnergy", &hcalEnergy, "hcalEnergy/F");
+   tree->Branch("leadingTrackNormChi2", &leadingTrackNormChi2 , "leadingTrackNormChi2/F");
+
    tree->Branch("iso_run2017v2", iso_run2017v2, "iso_run2017v2[8]/F");
    tree->Branch("iso_deepTau2017v2p1", iso_deepTau2017v2p1, "iso_deepTau2017v2p1[9]/F");
    tree->Branch("drmin_jet", &drmin_jet, "drmin_jet/F");   
@@ -110,6 +120,8 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("drmin_e", &drmin_e, "drmin_e/F");
    tree->Branch("drmin_mu", &drmin_mu, "drmin_mu/F");
    tree->Branch("drmin_tau", &drmin_tau, "drmin_tau/F");
+
+   tree->Branch("nTaus_gen", &nTaus_gen, "nTaus_gen/I");
 
    labels_run2017v2[0] = "inclusive";
    labels_run2017v2[1] = "byVVLooseIsolationMVArun2017v2DBoldDMwLT2017";
@@ -144,6 +156,13 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
    edm::Handle<pat::CompositeCandidateCollection> genVisTaus;
    iEvent.getByToken(genVisTauToken_, genVisTaus);
+
+   nTaus_gen = 0;
+   for (auto i = genParticles->begin(); i != genParticles->end(); ++i) {
+      if (i->isLastCopy()) {
+         if (std::abs(i->pdgId())==15) ++nTaus_gen;
+      }
+   }
 
    for (auto i = taus->begin(); i != taus->end(); ++i) {
  
@@ -204,7 +223,10 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       flightLength = sqrt(i->flightLength().Mag2());
       flightLengthSig = i->flightLengthSig();
       hasSecondaryVertex = i->hasSecondaryVertex();
- 
+      ecalEnergy = i->ecalEnergy();
+      hcalEnergy = i->hcalEnergy(); 
+      leadingTrackNormChi2 = i->leadingTrackNormChi2();
+
       float sigCands_pt = 0.;
       sigCands_dr = sigCands_deta = sigCands_dphi = 0.;
       for (auto j = i->signalGammaCands().begin(); j < i->signalGammaCands().end(); ++j) {

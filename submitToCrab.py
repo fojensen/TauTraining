@@ -12,7 +12,7 @@ with open(infile) as json_file:
       f.write("from CRABClient.UserUtilities import config, getUsernameFromSiteDB\n")
       f.write("config = config()\n")
       f.write("\n")
-      f.write("config.General.requestName = 'TauTraining_"+p['name']+"'\n")
+      f.write("config.General.requestName = 'TauTraining_"+p['name']+"_1'\n")
       f.write("config.General.workArea = 'crab_projects'\n")
       f.write("config.General.transferOutputs = True\n")
       f.write("config.General.transferLogs = True\n")

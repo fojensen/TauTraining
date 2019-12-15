@@ -12,18 +12,23 @@
 void plotEff(const TString var, const TString tagger)
 {
    TChain * c_sig = new TChain("skimmedTree");
-   c_sig->Add("./outputData/skim_GluGluHToTauTau_PU200.root");
+   c_sig->Add("./outputData/skim_WToLNu_2J.root");
+   c_sig->Add("./outputData/skim_DYToLL-M-50_2J.root");
+   c_sig->Add("./outputData/skim_GluGluHToTauTau.root");
+   c_sig->Add("./outputData/skim_VBFHToTauTau.root");
+   const TCut sigcut = "drmin_tau_tau<0.4";
 
    TChain * c_bkg = new TChain("skimmedTree");
-   c_bkg->Add("./outputData/skim_QCD_Flat_Pt-15to7000_PU200.root");
+   c_bkg->Add("./outputData/skim_QCD_Flat_Pt-15to7000.root");
+   const TCut bkgcut = "drmin_tau_tau>=0.4";
 
    TCut wp90, wp40;
    if (tagger=="run2017v2") {
       wp90 = "iso_run2017v2[1]>0.5";
-      wp40 = "iso_run2017v2[3]>0.5";
+      wp40 = "iso_run2017v2[5]>0.5";
    } else if (tagger=="deepTau2017v2p1") {
       wp90 = "iso_deepTau2017v2p1[1]>0.5";
-      wp40 = "iso_deepTau2017v2p1[3]>0.5";
+      wp40 = "iso_deepTau2017v2p1[5]>0.5";
    } else {
       return;
    }
@@ -33,12 +38,10 @@ void plotEff(const TString var, const TString tagger)
    TH1D * h;
    TString var_;
    if (var=="pt") {
-      const int n_pt = 9;
-      const double x_pt[n_pt+1] = {20., 25., 35., 50., 70., 95., 125., 160., 200., 245.};
-      h = new TH1D("h"+tag, ";p_{T} [GeV];#tau_{h} candidates / bin", n_pt, x_pt);
+      h = new TH1D("h"+tag, ";p_{T} [GeV];#tau_{h} candidates / bin", 20, 20., 220.);
       var_ = "pt";
    } else if (var=="eta") {
-      h = new TH1D("h"+tag, ";|#eta|;#tau_{h} candidates / 0.5", 6, 0., 3.);
+      h = new TH1D("h"+tag, ";|#eta|;#tau_{h} candidates / 0.25", 12, 0., 3.);
       var_ = "TMath::Abs(eta)";
    } else {
       return;
@@ -51,13 +54,13 @@ void plotEff(const TString var, const TString tagger)
    TH1D * h_bkg_num40 = (TH1D*)h->Clone("h_bkg_num40"+tag);
    TH1D * h_bkg_denom = (TH1D*)h->Clone("h_bkg_denom"+tag);
 
-   c_sig->Project(h_sig_denom->GetName(), var_);
-   c_sig->Project(h_sig_num90->GetName(), var_, wp90);
-   c_sig->Project(h_sig_num40->GetName(), var_, wp40);
+   c_sig->Project(h_sig_denom->GetName(), var_, sigcut);
+   c_sig->Project(h_sig_num90->GetName(), var_, sigcut && wp90);
+   c_sig->Project(h_sig_num40->GetName(), var_, sigcut && wp40);
 
-   c_bkg->Project(h_bkg_denom->GetName(), var_);
-   c_bkg->Project(h_bkg_num90->GetName(), var_, wp90);
-   c_bkg->Project(h_bkg_num40->GetName(), var_, wp40);
+   c_bkg->Project(h_bkg_denom->GetName(), var_, bkgcut);
+   c_bkg->Project(h_bkg_num90->GetName(), var_, bkgcut && wp90);
+   c_bkg->Project(h_bkg_num40->GetName(), var_, bkgcut && wp40);
 
    TGraphAsymmErrors * g_sig90 = new TGraphAsymmErrors(h_sig_num90, h_sig_denom);
    TGraphAsymmErrors * g_sig40 = new TGraphAsymmErrors(h_sig_num40, h_sig_denom);
@@ -124,11 +127,14 @@ TGraphErrors * runPointROC(const TString tagger)
    const int nwp = nwp_;
 
    TChain *c_sig = new TChain("skimmedTree");
-   c_sig->Add("./outputData/skim_GluGluHToTauTau_PU200.root");
+   c_sig->Add("./outputData/skim_WToLNu_2J.root");
+   c_sig->Add("./outputData/skim_DYToLL-M-50_2J.root");
+   c_sig->Add("./outputData/skim_GluGluHToTauTau.root");
+   c_sig->Add("./outputData/skim_VBFHToTauTau.root");
    const TCut sigcut = "drmin_tau_tau<0.4";
 
    TChain *c_bkg =  new TChain("skimmedTree");
-   c_bkg->Add("./outputData/skim_QCD_Flat_Pt-15to7000_PU200.root");
+   c_bkg->Add("./outputData/skim_QCD_Flat_Pt-15to7000.root");
    const TCut bkgcut = "drmin_tau_tau>=0.4";
 
    double x[nwp], y[nwp];
@@ -174,7 +180,7 @@ void plotROC()
 {
    TGraphErrors * g_run2017v2 = runPointROC("run2017v2");
    TGraphErrors * g_deepTau2017v2p1 = runPointROC("deepTau2017v2p1");
-
+   
    TCanvas * c = new TCanvas("c", "plotROC", 400, 400);
 
    g_run2017v2->SetMarkerStyle(20);
