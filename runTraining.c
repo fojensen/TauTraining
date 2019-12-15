@@ -47,6 +47,7 @@ void runTraining()
    loader->AddVariable("ecalEnergy/(ecalEnergy+hcalEnergy)");
    loader->AddVariable("leadingTrackNormChi2"); 
    
+
    TFile *input_sig1 = TFile::Open("./outputData/skim_WToLNu_2J.root");
    TTree * sigTree1 = (TTree*)input_sig1->Get("skimmedTree");
    loader->AddSignalTree(sigTree1);
@@ -55,13 +56,17 @@ void runTraining()
    TTree * sigTree2 = (TTree*)input_sig2->Get("skimmedTree");
    loader->AddSignalTree(sigTree2);
 
-   TFile *input_sig3 = TFile::Open("./outputData/skim_GluGluHToTauTau.root");
+   TFile *input_sig3 = TFile::Open("./outputData/skim_TTTo2L2Nu.root");
    TTree * sigTree3 = (TTree*)input_sig3->Get("skimmedTree");
    loader->AddSignalTree(sigTree3);
-   
-   TFile *input_sig4 = TFile::Open("./outputData/skim_VBFHToTauTau.root");
+
+   TFile *input_sig4 = TFile::Open("./outputData/skim_GluGluHToTauTau.root");
    TTree * sigTree4 = (TTree*)input_sig4->Get("skimmedTree");
    loader->AddSignalTree(sigTree4);
+   
+   TFile *input_sig5 = TFile::Open("./outputData/skim_VBFHToTauTau.root");
+   TTree * sigTree5 = (TTree*)input_sig5->Get("skimmedTree");
+   loader->AddSignalTree(sigTree5);
 
    TFile *input_bkg = TFile::Open("./outputData/skim_QCD_Flat_Pt-15to7000.root");
    TTree * bkgTree = (TTree*)input_bkg->Get("skimmedTree");

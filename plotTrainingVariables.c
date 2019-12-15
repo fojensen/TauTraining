@@ -28,14 +28,15 @@ double addUnderflow(TH1D *h)
 
 void runPoint(TH1D * htemp, const TString var, const bool dolog=false)
 {
-   const int n = 5;
+   const int n = 6;
    TString filetag[n];
    TCut cuts[n];
    filetag[0] = "WToLNu_2J";            cuts[0] = "drmin_tau_tau<0.4";
    filetag[1] = "DYToLL-M-50_2J";       cuts[1] = "drmin_tau_tau<0.4";
-   filetag[2] = "GluGluHToTauTau";      cuts[2] = "drmin_tau_tau<0.4";
-   filetag[3] = "VBFHToTauTau";         cuts[3] = "drmin_tau_tau<0.4";
-   filetag[4] = "QCD_Flat_Pt-15to7000"; cuts[4] = "drmin_tau_tau>=0.4";
+   filetag[2] = "TTTo2L2Nu";            cuts[2] = "drmin_tau_tau<0.4";
+   filetag[3] = "GluGluHToTauTau";      cuts[3] = "drmin_tau_tau<0.4";
+   filetag[4] = "VBFHToTauTau";         cuts[4] = "drmin_tau_tau<0.4";
+   filetag[5] = "QCD_Flat_Pt-15to7000"; cuts[5] = "drmin_tau_tau>=0.4";
 
    TH1D * h[n];
    for (int i = 0; i < n; ++i) {
@@ -157,7 +158,7 @@ void plotTrainingVariables()
    TH1D h_leadingTrackNormChi2("h_leadingTrackNormChi2", ";leadingTrackNormChi2;", 40, 0., 100.);
    runPoint(&h_leadingTrackNormChi2, "leadingTrackNormChi2", false);
 
-   TH1D h_ecalhcalEnergy("h_ecalhcalEnergy", ";ecalEnergy/(ecalEnergy+hcalEnergy);", 40, 0., 1.);
-   runPoint(&h_ecalhcalEnergy, "ecalEnergy/(ecalEnergy+hcalEnergy)", false);
+   TH1D h_eRatio("h_eRatio", ";ecalEnergy/(ecalEnergy+hcalEnergy);", 40, 0., 1.);
+   runPoint(&h_eRatio, "ecalEnergy/(ecalEnergy+hcalEnergy)", false);
 }
 

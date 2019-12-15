@@ -14,6 +14,7 @@ void plotEff(const TString var, const TString tagger)
    TChain * c_sig = new TChain("skimmedTree");
    c_sig->Add("./outputData/skim_WToLNu_2J.root");
    c_sig->Add("./outputData/skim_DYToLL-M-50_2J.root");
+   c_sig->Add("./outputData/skim_TTTo2L2Nu.root");
    c_sig->Add("./outputData/skim_GluGluHToTauTau.root");
    c_sig->Add("./outputData/skim_VBFHToTauTau.root");
    const TCut sigcut = "drmin_tau_tau<0.4";
@@ -129,6 +130,7 @@ TGraphErrors * runPointROC(const TString tagger)
    TChain *c_sig = new TChain("skimmedTree");
    c_sig->Add("./outputData/skim_WToLNu_2J.root");
    c_sig->Add("./outputData/skim_DYToLL-M-50_2J.root");
+   c_sig->Add("./outputData/skim_TTTo2L2Nu.root");
    c_sig->Add("./outputData/skim_GluGluHToTauTau.root");
    c_sig->Add("./outputData/skim_VBFHToTauTau.root");
    const TCut sigcut = "drmin_tau_tau<0.4";
