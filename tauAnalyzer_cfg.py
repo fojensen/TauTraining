@@ -2,16 +2,32 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("analysis")
 
+import FWCore.ParameterSet.VarParsing as VarParsing
+options = VarParsing.VarParsing ('analysis')
+options.register('globalTag',
+   '93X_upgrade2023_realistic_v5',
+   VarParsing.VarParsing.multiplicity.singleton,
+   VarParsing.VarParsing.varType.string,
+   "globalTag"
+)
+
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-process.GlobalTag.globaltag = '93X_upgrade2023_realistic_v5'
+process.GlobalTag.globaltag = options.globalTag
 
 process.genVisTaus = cms.EDProducer("GenVisTauProducer",
    genParticleCollection = cms.InputTag("prunedGenParticles")
 )
 
+process.goodVertices = cms.EDFilter("VertexSelector",
+   src = cms.InputTag("offlineSlimmedPrimaryVertices"),
+   cut = cms.string("!isFake && ndof > 4 && abs(z) < 24 && position.Rho < 2"),
+   filter = cms.bool(False)
+)
+
 process.eventAnalyzer = cms.EDAnalyzer("EventAnalyzer",
    tauCollection = cms.InputTag("slimmedTaus"),
-   genParticleCollection = cms.InputTag("prunedGenParticles")
+   genParticleCollection = cms.InputTag("prunedGenParticles"),
+   vertexCollection = cms.InputTag("goodVertices")
 )
 
 updatedTauName = "slimmedTausNewID"
@@ -29,12 +45,14 @@ process.tauAnalyzer = cms.EDAnalyzer("TauAnalyzer",
    genJetCollection = cms.InputTag("slimmedGenJets"),
    genVisTauCollection = cms.InputTag("genVisTaus:genVisTaus"),
    genParticleCollection = cms.InputTag("prunedGenParticles"),
+   vertexCollection = cms.InputTag("goodVertices")
 )
 
 process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring(
       "/store/mc/PhaseIISpr18AODMiniAOD/GluGluHToTauTau_M125_14TeV_powheg_pythia8/MINIAODSIM/PU200_93X_upgrade2023_realistic_v5-v1/20000/02AB313D-AA45-E811-A1B6-7CD30AB15C58.root"
- #     "/store/mc/PhaseIISpr18AODMiniAOD/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/MINIAODSIM/PU200_93X_upgrade2023_realistic_v5-v1/90000/FA267931-2E44-E811-B0F9-C4346BC80410.root"
+      #"/store/mc/PhaseIISpr18AODMiniAOD/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/MINIAODSIM/PU200_93X_upgrade2023_realistic_v5-v1/90000/FA267931-2E44-E811-B0F9-C4346BC80410.root"
+      #"/store/mc/PhaseIISpr18AODMiniAOD/WToLNu_2J_14TeV-madgraphMLM-pythia8/MINIAODSIM/PU200_93X_upgrade2023_realistic_v5-v1/90000/BA580DFF-2049-E811-B211-1CC1DE1CF44E.root"
    )
 )
 
@@ -43,7 +61,7 @@ process.TFileService = cms.Service("TFileService",
 )
 
 process.maxEvents = cms.untracked.PSet(
-   input = cms.untracked.int32(100)
+   input = cms.untracked.int32(300)
 )
 
 process.options = cms.untracked.PSet(
@@ -65,7 +83,8 @@ process.printTree = cms.EDAnalyzer("ParticleTreeDrawer",
 )
 
 process.mypath = cms.Sequence(
-   process.eventAnalyzer
+   process.goodVertices
+   * process.eventAnalyzer
    #* process.printTree
    * process.genVisTaus
    * process.rerunMvaIsolationSequence

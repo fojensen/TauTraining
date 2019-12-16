@@ -19,6 +19,9 @@ with open(infile) as json_file:
       f.write("\n")
       f.write("config.JobType.pluginName = 'Analysis'\n")
       f.write("config.JobType.psetName = './tauAnalyzer_cfg.py'\n")
+      pyCfgParams = []
+      pyCfgParams.append('globalTag='+str(p['globalTag']))
+      f.write("config.JobType.pyCfgParams = " + str(pyCfgParams) + "\n")
       f.write("\n")
       f.write("config.Data.inputDataset = '"+p['das']+"'\n")
       f.write("config.Data.splitting = 'Automatic'\n")
@@ -27,5 +30,5 @@ with open(infile) as json_file:
       f.write("config.Site.storageSite = 'T3_US_FNALLPC'\n")
       f.close()
       # comment the next line for a dry run
-      os.system("crab submit " + f.name)
+#      os.system("crab submit " + f.name)
 

@@ -14,14 +14,14 @@ void plotEff(const TString var, const TString tagger)
    TChain * c_sig = new TChain("skimmedTree");
    c_sig->Add("./outputData/skim_WToLNu_2J.root");
    c_sig->Add("./outputData/skim_DYToLL-M-50_2J.root");
-   c_sig->Add("./outputData/skim_TTTo2L2Nu.root");
+   //c_sig->Add("./outputData/skim_TTTo2L2Nu.root");
    c_sig->Add("./outputData/skim_GluGluHToTauTau.root");
    c_sig->Add("./outputData/skim_VBFHToTauTau.root");
    const TCut sigcut = "drmin_tau_tau<0.4";
 
    TChain * c_bkg = new TChain("skimmedTree");
    c_bkg->Add("./outputData/skim_QCD_Flat_Pt-15to7000.root");
-   const TCut bkgcut = "drmin_tau_tau>=0.4";
+   const TCut bkgcut = "1>0";
 
    TCut wp90, wp40;
    if (tagger=="run2017v2") {
@@ -55,13 +55,16 @@ void plotEff(const TString var, const TString tagger)
    TH1D * h_bkg_num40 = (TH1D*)h->Clone("h_bkg_num40"+tag);
    TH1D * h_bkg_denom = (TH1D*)h->Clone("h_bkg_denom"+tag);
 
-   c_sig->Project(h_sig_denom->GetName(), var_, sigcut);
+   const int n_denom_sig = c_sig->Project(h_sig_denom->GetName(), var_, sigcut);
    c_sig->Project(h_sig_num90->GetName(), var_, sigcut && wp90);
    c_sig->Project(h_sig_num40->GetName(), var_, sigcut && wp40);
 
-   c_bkg->Project(h_bkg_denom->GetName(), var_, bkgcut);
+   const int n_denom_bkg= c_bkg->Project(h_bkg_denom->GetName(), var_, bkgcut);
    c_bkg->Project(h_bkg_num90->GetName(), var_, bkgcut && wp90);
    c_bkg->Project(h_bkg_num40->GetName(), var_, bkgcut && wp40);
+
+   std::cout << "entries in signal denominator: " << n_denom_sig << std::endl;
+   std::cout << "entries in background denominator: " << n_denom_bkg << std::endl;
 
    TGraphAsymmErrors * g_sig90 = new TGraphAsymmErrors(h_sig_num90, h_sig_denom);
    TGraphAsymmErrors * g_sig40 = new TGraphAsymmErrors(h_sig_num40, h_sig_denom);
@@ -130,7 +133,7 @@ TGraphErrors * runPointROC(const TString tagger)
    TChain *c_sig = new TChain("skimmedTree");
    c_sig->Add("./outputData/skim_WToLNu_2J.root");
    c_sig->Add("./outputData/skim_DYToLL-M-50_2J.root");
-   c_sig->Add("./outputData/skim_TTTo2L2Nu.root");
+   //c_sig->Add("./outputData/skim_TTTo2L2Nu.root");
    c_sig->Add("./outputData/skim_GluGluHToTauTau.root");
    c_sig->Add("./outputData/skim_VBFHToTauTau.root");
    const TCut sigcut = "drmin_tau_tau<0.4";
@@ -213,7 +216,7 @@ void plotROC()
 
 void plotReferencePerformance()
 {
-   plotROC();
+ //  plotROC();
    plotEff("pt", "run2017v2");
    plotEff("eta", "run2017v2");
    plotEff("pt", "deepTau2017v2p1");

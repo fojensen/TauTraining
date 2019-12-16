@@ -47,7 +47,6 @@ void runTraining()
    loader->AddVariable("ecalEnergy/(ecalEnergy+hcalEnergy)");
    loader->AddVariable("leadingTrackNormChi2"); 
    
-
    TFile *input_sig1 = TFile::Open("./outputData/skim_WToLNu_2J.root");
    TTree * sigTree1 = (TTree*)input_sig1->Get("skimmedTree");
    loader->AddSignalTree(sigTree1);
@@ -56,9 +55,9 @@ void runTraining()
    TTree * sigTree2 = (TTree*)input_sig2->Get("skimmedTree");
    loader->AddSignalTree(sigTree2);
 
-   TFile *input_sig3 = TFile::Open("./outputData/skim_TTTo2L2Nu.root");
-   TTree * sigTree3 = (TTree*)input_sig3->Get("skimmedTree");
-   loader->AddSignalTree(sigTree3);
+   //TFile *input_sig3 = TFile::Open("./outputData/skim_TTTo2L2Nu.root");
+   //TTree * sigTree3 = (TTree*)input_sig3->Get("skimmedTree");
+   //loader->AddSignalTree(sigTree3);
 
    TFile *input_sig4 = TFile::Open("./outputData/skim_GluGluHToTauTau.root");
    TTree * sigTree4 = (TTree*)input_sig4->Get("skimmedTree");
@@ -75,7 +74,7 @@ void runTraining()
    loader->SetWeightExpression("ptetaWeight", "Background");
 
    const TCut sigcut = "drmin_tau_tau<0.4";
-   const TCut bkgcut = "drmin_tau_tau>=0.4";
+   const TCut bkgcut = "1>0";
 
    const TString optionTable_2 = 
       "SplitMode=Random:MixMode=SameAsSplitMode:SplitSeed=100:NormMode=EqualNumEvents:nTrain_signal=0:nTest_signal=0:nTrain_Background=200000:nTest_Background=200000:V=False:VerboseLevel=Info"

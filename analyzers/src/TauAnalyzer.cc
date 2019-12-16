@@ -15,6 +15,7 @@
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
 
 class TauAnalyzer : public edm::EDAnalyzer {
 public:
@@ -26,6 +27,7 @@ private:
    edm::EDGetTokenT<std::vector<reco::GenJet>> genJetToken_; 
    edm::EDGetTokenT<pat::CompositeCandidateCollection> genVisTauToken_;
    edm::EDGetTokenT<std::vector<reco::GenParticle>> genParticleToken_;
+   edm::EDGetTokenT<std::vector<reco::Vertex>> vertexToken_;
    TTree * tree;
    
    float chargedIsoPtSum;
@@ -68,8 +70,9 @@ private:
    float drmin_e;
    float drmin_mu;
    float drmin_tau;
+   float drmin_b;
 
-   int nTaus_gen;
+   int nTaus_gen, nVertices;
 };
 
 TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
@@ -78,6 +81,7 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    genJetToken_ = consumes<std::vector<reco::GenJet>>(iConfig.getParameter<edm::InputTag>("genJetCollection"));
    genVisTauToken_ = consumes<pat::CompositeCandidateCollection>(iConfig.getParameter<edm::InputTag>("genVisTauCollection"));
    genParticleToken_ = consumes<std::vector<reco::GenParticle>>(iConfig.getParameter<edm::InputTag>("genParticleCollection"));
+   vertexToken_ = consumes<std::vector<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("vertexCollection"));
 
    edm::Service<TFileService> fs;
    tree = fs->make<TTree>("tree", "tree");
@@ -120,7 +124,9 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("drmin_e", &drmin_e, "drmin_e/F");
    tree->Branch("drmin_mu", &drmin_mu, "drmin_mu/F");
    tree->Branch("drmin_tau", &drmin_tau, "drmin_tau/F");
+   tree->Branch("drmin_b", &drmin_b, "drmin_b/F");
 
+    tree->Branch("nVertices", &nVertices, "nVertices/I");
    tree->Branch("nTaus_gen", &nTaus_gen, "nTaus_gen/I");
 
    labels_run2017v2[0] = "inclusive";
@@ -164,6 +170,10 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       }
    }
 
+   edm::Handle<std::vector<reco::Vertex>> vertices;
+   iEvent.getByToken(vertexToken_, vertices);
+   nVertices = vertices->size();
+
    for (auto i = taus->begin(); i != taus->end(); ++i) {
  
       drmin_jet = 9.;
@@ -182,12 +192,16 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
          if (id==13 && dr<drmin_tau_mu) drmin_tau_mu = dr;
          if (id==15 && dr<drmin_tau_tau) drmin_tau_tau = dr;
       }
+      if (drmin_tau_e<0.4) continue;
+      if (drmin_tau_mu<0.4) continue;
 
       drmin_e = drmin_mu = drmin_tau = 9.;
+      drmin_b = 9.;
       for (auto j = genParticles->begin(); j != genParticles->end(); ++j) {
          if (j->isLastCopy()) {
             const int id = std::abs(j->pdgId());
             const float dr = reco::deltaR(*i, *j);
+            if (id==5  && dr<drmin_b) drmin_b = dr;
             if (id==11 && dr<drmin_e) drmin_e = dr;
             if (id==13 && dr<drmin_mu) drmin_mu = dr;
             if (id==15 && dr<drmin_tau) drmin_tau = dr;

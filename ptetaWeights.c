@@ -163,12 +163,12 @@ void makeWeights()
    TH2D * h_pteta_bkg = (TH2D*)h_pteta->Clone("h_pteta_bkg");
 
    const TCut sigcut = "drmin_tau_tau<0.4";
-   const TCut bkgcut = "drmin_tau_tau>=0.4";
+   const TCut bkgcut = "1>0";
 
    TChain * c_sig = new TChain("skimmedTree");
    c_sig->Add("./outputData/skim_WToLNu_2J.root");
    c_sig->Add("./outputData/skim_DYToLL-M-50_2J.root");
-   c_sig->Add("./outputData/skim_TTTo2L2Nu.root");
+   //c_sig->Add("./outputData/skim_TTTo2L2Nu.root");
    c_sig->Add("./outputData/skim_GluGluHToTauTau.root");
    c_sig->Add("./outputData/skim_VBFHToTauTau.root");
    const int n_sig = c_sig->GetEntries(sigcut);

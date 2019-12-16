@@ -36,7 +36,7 @@ void runPoint(TH1D * htemp, const TString var, const bool dolog=false)
    filetag[2] = "TTTo2L2Nu";            cuts[2] = "drmin_tau_tau<0.4";
    filetag[3] = "GluGluHToTauTau";      cuts[3] = "drmin_tau_tau<0.4";
    filetag[4] = "VBFHToTauTau";         cuts[4] = "drmin_tau_tau<0.4";
-   filetag[5] = "QCD_Flat_Pt-15to7000"; cuts[5] = "drmin_tau_tau>=0.4";
+   filetag[5] = "QCD_Flat_Pt-15to7000"; cuts[5] = "1>0";
 
    TH1D * h[n];
    for (int i = 0; i < n; ++i) {
@@ -155,7 +155,7 @@ void plotTrainingVariables()
    TH1D h_isoCands_dphi("h_isoCands_dphi", ";isoCands_dphi;#tau_{h} candidates / 0.0285", 25, -0.1, 0.6);
    runPoint(&h_isoCands_dphi, "isolationGammaCands_size? isoCands_dphi : -0.05", false);
 
-   TH1D h_leadingTrackNormChi2("h_leadingTrackNormChi2", ";leadingTrackNormChi2;", 40, 0., 100.);
+   TH1D h_leadingTrackNormChi2("h_leadingTrackNormChi2", ";leadingTrackNormChi2;", 40, 0., 10.);
    runPoint(&h_leadingTrackNormChi2, "leadingTrackNormChi2", false);
 
    TH1D h_eRatio("h_eRatio", ";ecalEnergy/(ecalEnergy+hcalEnergy);", 40, 0., 1.);
