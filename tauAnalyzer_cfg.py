@@ -61,7 +61,7 @@ process.TFileService = cms.Service("TFileService",
 )
 
 process.maxEvents = cms.untracked.PSet(
-   input = cms.untracked.int32(300)
+   input = cms.untracked.int32(100)
 )
 
 process.options = cms.untracked.PSet(

@@ -29,10 +29,14 @@ private:
    edm::EDGetTokenT<std::vector<reco::GenParticle>> genParticleToken_;
    edm::EDGetTokenT<std::vector<reco::Vertex>> vertexToken_;
    TTree * tree;
-   
+ 
+   float recTauGJangleDiff;
+   float recTauGJangleMeasured;
    float chargedIsoPtSum;
    float neutralIsoPtSum;
    int decayMode;
+   float dxy;
+   float dxy_Sig;
    float decayModeFinding;
    float decayModeFindingNewDMs;
    float leadChargedHadrCand_dxy;
@@ -85,9 +89,13 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
 
    edm::Service<TFileService> fs;
    tree = fs->make<TTree>("tree", "tree");
- 
+
+   tree->Branch("recTauGJangleDiff", &recTauGJangleDiff, "recTauGJangleDiff/F");
+   tree->Branch("recTauGJangleMeasured", &recTauGJangleMeasured, "recTauGJangleMeasured/F");
    tree->Branch("pt", &pt, "pt/F");
    tree->Branch("eta", &eta, "eta/F");
+   tree->Branch("dxy", &dxy, "dxy/F");
+   tree->Branch("dxy_Sig", &dxy_Sig, "dxy_Sig/F");
    tree->Branch("decayMode", &decayMode, "decayMode/I");
    tree->Branch("decayModeFinding", &decayModeFinding, "decayModeFinding/F");
    tree->Branch("decayModeFindingNewDMs", &decayModeFindingNewDMs, "decayModeFindingNewDMs/F");
@@ -126,7 +134,7 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("drmin_tau", &drmin_tau, "drmin_tau/F");
    tree->Branch("drmin_b", &drmin_b, "drmin_b/F");
 
-    tree->Branch("nVertices", &nVertices, "nVertices/I");
+   tree->Branch("nVertices", &nVertices, "nVertices/I");
    tree->Branch("nTaus_gen", &nTaus_gen, "nTaus_gen/I");
 
    labels_run2017v2[0] = "inclusive";
@@ -232,6 +240,8 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       photonPtSumOutsideSignalCone = i->tauID("photonPtSumOutsideSignalCone");
       signalGammaCands_size = i->signalGammaCands().size();
       isolationGammaCands_size = i->isolationGammaCands().size();
+      dxy = i->dxy();
+      dxy_Sig = i->dxy_Sig();
       ip3d = i->ip3d();
       ip3d_Sig = i->ip3d_Sig();
       flightLength = sqrt(i->flightLength().Mag2());
@@ -240,6 +250,24 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       ecalEnergy = i->ecalEnergy();
       hcalEnergy = i->hcalEnergy(); 
       leadingTrackNormChi2 = i->leadingTrackNormChi2();
+
+      if (i->decayMode()==10) {
+         // calculate difference between maximally allowed Gottfried-Jackson angle (angle between tau and a1 momentum)
+         // and measured Gottfried-Jackson angle from flightlength vector and tau momentum
+         // thetaGJmax = arcsin( ( m_tau^2 - m_a1^2) / ( 2 * m_tau * mag(p_a1) ))
+         // thetaGJmeasured is simply the angle between the flightLength vector and the tau momentum
+         double mTau = 1.77682;
+         double mAOne = i->p4().M();
+         double flightLengthMag = i->flightLength().Mag2();
+         double pAOneMag = i->p();
+         double thetaGJmax = TMath::ASin( (TMath::Power(mTau,2) - TMath::Power(mAOne,2)) / ( 2 * mTau * pAOneMag) );
+         double thetaGJmeasured = TMath::ACos( ( i->p4().px() * i->flightLength().x() + i->p4().py() * i->flightLength().y() + i->p4().pz() * i->flightLength().z()) / ( pAOneMag * TMath::Sqrt(flightLengthMag)) );
+         recTauGJangleMeasured = thetaGJmeasured;
+         recTauGJangleDiff = thetaGJmeasured - thetaGJmax;
+      } else {
+         recTauGJangleMeasured = -999.;
+         recTauGJangleDiff = -999.;
+      }
 
       float sigCands_pt = 0.;
       sigCands_dr = sigCands_deta = sigCands_dphi = 0.;

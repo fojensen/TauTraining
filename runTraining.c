@@ -16,9 +16,15 @@ void runTraining()
 
    TMVA::DataLoader * loader = new TMVA::DataLoader("dataset");
 
-   // Run 1
+   loader->AddSpectator("eta");
+
+   loader->AddVariable("pt");
+   loader->AddVariable("TMath::Abs(eta)");
    loader->AddVariable("chargedIsoPtSum");
    loader->AddVariable("neutralIsoPtSum");
+   loader->AddVariable("puCorrPtSum");
+   loader->AddVariable("photonPtSumOutsideSignalCone");
+
    loader->AddVariable("decayMode");
    loader->AddVariable("TMath::Sqrt(TMath::Abs(leadChargedHadrCand_dxy))");
    loader->AddVariable("TMath::Abs(leadChargedHadrCand_dxysig)");
@@ -33,7 +39,6 @@ void runTraining()
    loader->AddSpectator("eta");
 
    // Run 2
-   loader->AddVariable("photonPtSumOutsideSignalCone"); 
    loader->AddVariable("TMath::Sqrt(TMath::Abs(ip3d))");
    loader->AddVariable("TMath::Abs(ip3d_Sig)");
    loader->AddVariable("signalGammaCands_size");
