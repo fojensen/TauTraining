@@ -52,6 +52,8 @@ private:
    float ip3d_Sig;
    int isolationGammaCands_size;
    int signalGammaCands_size;
+   int isolationGammaCands_size_0p5;
+   int signalGammaCands_size_0p5;
    float sigCands_dr;
    float sigCands_deta;
    float sigCands_dphi;
@@ -105,6 +107,8 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("photonPtSumOutsideSignalCone", &photonPtSumOutsideSignalCone, "photonPtSumOutsideSignalCone/F");
    tree->Branch("signalGammaCands_size", &signalGammaCands_size, "signalGammaCands_size/I");
    tree->Branch("isolationGammaCands_size", &isolationGammaCands_size, "isolationGammaCands_size/I");
+   tree->Branch("signalGammaCands_size_0p5", &signalGammaCands_size_0p5, "signalGammaCands_size_0p5/I");
+   tree->Branch("isolationGammaCands_size_0p5", &isolationGammaCands_size_0p5, "isolationGammaCands_size_0p5/I");
    tree->Branch("ip3d", &ip3d, "ip3d/F");
    tree->Branch("ip3d_Sig", &ip3d_Sig, "ip3d_Sig/F");
    tree->Branch("hasSecondaryVertex", &hasSecondaryVertex, "hasSecondaryVertex/O");
@@ -240,6 +244,16 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       photonPtSumOutsideSignalCone = i->tauID("photonPtSumOutsideSignalCone");
       signalGammaCands_size = i->signalGammaCands().size();
       isolationGammaCands_size = i->isolationGammaCands().size();
+
+      signalGammaCands_size_0p5 = 0;
+      for (auto j = i->signalGammaCands().begin(); j !=  i->signalGammaCands().end(); ++j) {
+         if ((*j)->pt()>=0.5) ++signalGammaCands_size_0p5;
+      }
+      isolationGammaCands_size_0p5 = 0;
+      for (auto j = i->isolationGammaCands().begin(); j !=  i->isolationGammaCands().end(); ++j) {
+         if ((*j)->pt()>=0.5) ++isolationGammaCands_size_0p5;
+      }
+
       dxy = i->dxy();
       dxy_Sig = i->dxy_Sig();
       ip3d = i->ip3d();
