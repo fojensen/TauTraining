@@ -16,42 +16,61 @@ void runTraining()
 
    TMVA::DataLoader * loader = new TMVA::DataLoader("dataset");
 
-   loader->AddSpectator("eta");
-
    loader->AddVariable("pt");
+   //loader->AddVariable("TMath::Log(TMath::Max(1., pt))");
+
    loader->AddVariable("TMath::Abs(eta)");
+   
    loader->AddVariable("chargedIsoPtSum");
+   //loader->AddVariable("TMath::Log(TMath::Max(1.e-2, chargedIsoPtSum))");
+
    loader->AddVariable("neutralIsoPtSum");
+   //loader->AddVariable("TMath::Log(TMath::Max(1.e-2, neutralIsoPtSum))");
+
    loader->AddVariable("puCorrPtSum");
+   //loader->AddVariable("TMath::Log(TMath::Max(1.e-2, puCorrPtSum))");
+
    loader->AddVariable("photonPtSumOutsideSignalCone");
+   //loader->AddVariable("TMath::Log(TMath::Max(1.e-2, photonPtSumOutsideSignalCone))"); 
 
    loader->AddVariable("decayMode");
-   loader->AddVariable("TMath::Sqrt(TMath::Abs(leadChargedHadrCand_dxy))");
-   loader->AddVariable("TMath::Abs(leadChargedHadrCand_dxysig)");
-   loader->AddVariable("hasSecondaryVertex");
-   loader->AddVariable("hasSecondaryVertex? TMath::Sqrt(TMath::Abs(flightLength)) : -0.1");
-   loader->AddVariable("hasSecondaryVertex? TMath::Abs(flightLengthSig): -0.1");
-   loader->AddVariable("puCorrPtSum");
    
-   loader->AddVariable("pt");
-   //loader->AddSpectator("pt");
-   loader->AddVariable("TMath::Abs(eta)");
-   loader->AddSpectator("eta");
+   loader->AddVariable("signalGammaCands_size_0p5+isolationGammaCands_size_0p5");
+   //loader->AddVariable("TMath::Min(30., signalGammaCands_size_0p5+isolationGammaCands_size_0p5)");
 
-   // Run 2
-   loader->AddVariable("TMath::Sqrt(TMath::Abs(ip3d))");
-   loader->AddVariable("TMath::Abs(ip3d_Sig)");
-   loader->AddVariable("signalGammaCands_size");
-   loader->AddVariable("signalGammaCands_size? sigCands_dr : -0.1");
-   loader->AddVariable("signalGammaCands_size? sigCands_deta : -0.1");
-   loader->AddVariable("signalGammaCands_size? sigCands_dphi: -0.1");
-   loader->AddVariable("isolationGammaCands_size");
-   loader->AddVariable("isolationGammaCands_size? isoCands_dr: -0.1");
-   loader->AddVariable("isolationGammaCands_size? isoCands_deta: -0.1");
-   loader->AddVariable("isolationGammaCands_size? isoCands_dphi: -0.1");
-   loader->AddVariable("ecalEnergy/(ecalEnergy+hcalEnergy)");
-   loader->AddVariable("leadingTrackNormChi2"); 
+   loader->AddVariable("isoCands_deta");
+   loader->AddVariable("isoCands_dphi");
+   loader->AddVariable("sigCands_dr");
+   loader->AddVariable("isoCands_dr");
+
+   loader->AddVariable("eRatio");
+   //loader->AddVariable("TMath::Min(1., eRatio)");
+
+   loader->AddVariable("dxy");
+   //loader->AddVariable("TMath::Sign(+1., dxy)");
+   //loader->AddVariable("TMath::Sqrt(TMath::Abs(TMath::Min(1., TMath::Abs(dxy))))");
+
+   loader->AddVariable("dxy_Sig");
+   //loader->AddVariable("TMath::Min(10., TMath::Abs(dxy_Sig))");
+
+   loader->AddVariable("ip3d");
+   //loader->AddVariable("TMath::Sign(+1., ip3d)");
+   //loader->AddVariable("TMath::Sqrt(TMath::Abs(TMath::Min(1., TMath::Abs(ip3d))))");
+
+   loader->AddVariable("ip3d_Sig");
+   //loader->AddVariable("TMath::Min(10., TMath::Abs(ip3d_Sig))");   
+
+   loader->AddVariable("hasSecondaryVertex");
+
+   loader->AddVariable("flightLength");
+   //loader->AddVariable("TMath::Sqrt(flightLength");
    
+   loader->AddVariable("flightLengthSig");
+   //loader->AddVariable("TMath::Min(10., flightLengthSig)");
+   
+   loader->AddVariable("recTauGJangleDiff");
+   //loader->AddVariable("TMath::Max(-1.,recTauGJangleDiff)");
+ 
    TFile *input_sig1 = TFile::Open("./outputData/skim_WToLNu_2J.root");
    TTree * sigTree1 = (TTree*)input_sig1->Get("skimmedTree");
    loader->AddSignalTree(sigTree1);
@@ -67,12 +86,12 @@ void runTraining()
    TFile *input_sig4 = TFile::Open("./outputData/skim_GluGluHToTauTau.root");
    TTree * sigTree4 = (TTree*)input_sig4->Get("skimmedTree");
    loader->AddSignalTree(sigTree4);
-   
+
    TFile *input_sig5 = TFile::Open("./outputData/skim_VBFHToTauTau.root");
    TTree * sigTree5 = (TTree*)input_sig5->Get("skimmedTree");
    loader->AddSignalTree(sigTree5);
 
-   TFile *input_bkg = TFile::Open("./outputData/skim_QCD_Flat_Pt-15to7000.root");
+   TFile *input_bkg = TFile::Open("./outputData/skim_QCD_Flat.root");
    TTree * bkgTree = (TTree*)input_bkg->Get("skimmedTree");
    loader->AddBackgroundTree(bkgTree);
 
@@ -82,7 +101,7 @@ void runTraining()
    const TCut bkgcut = "1>0";
 
    const TString optionTable_2 = 
-      "SplitMode=Random:MixMode=SameAsSplitMode:SplitSeed=100:NormMode=EqualNumEvents:nTrain_signal=0:nTest_signal=0:nTrain_Background=200000:nTest_Background=200000:V=False:VerboseLevel=Info"
+      "SplitMode=Random:MixMode=SameAsSplitMode:SplitSeed=100:NormMode=EqualNumEvents:nTrain_signal=0:nTest_signal=0:nTrain_Background=500000:nTest_Background=500000:V=False:VerboseLevel=Info"
    ;
    loader->PrepareTrainingAndTestTree(sigcut, bkgcut, optionTable_2);
  

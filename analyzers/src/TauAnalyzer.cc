@@ -30,8 +30,8 @@ private:
    edm::EDGetTokenT<std::vector<reco::Vertex>> vertexToken_;
    TTree * tree;
  
-   float recTauGJangleDiff;
-   float recTauGJangleMeasured;
+   float thetaGJ;
+   float thetaGJmax;
    float chargedIsoPtSum;
    float neutralIsoPtSum;
    int decayMode;
@@ -47,13 +47,17 @@ private:
    float puCorrPtSum;
    float pt;
    float eta;
-   float photonPtSumOutsideSignalCone; 
+   float photonPtSumOutsideSignalCone;
+   float hcalEnergyLeadChargedHadrCand;
+   float ecalEnergyLeadChargedHadrCand;
    float ip3d;
    float ip3d_Sig;
    int isolationGammaCands_size;
    int signalGammaCands_size;
    int isolationGammaCands_size_0p5;
    int signalGammaCands_size_0p5;
+   int signalChargedHadrCands_size;
+   int signalNeutrHadrCands_size;
    float sigCands_dr;
    float sigCands_deta;
    float sigCands_dphi;
@@ -61,8 +65,11 @@ private:
    float isoCands_deta;
    float isoCands_dphi;
 
+   int Z_dm, Wplus_dm, Wminus_dm, H_dm;
+
    float ecalEnergy;
    float hcalEnergy;
+   float eRatio;
    float leadingTrackNormChi2;
 
    TString labels_run2017v2[8];
@@ -92,8 +99,8 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    edm::Service<TFileService> fs;
    tree = fs->make<TTree>("tree", "tree");
 
-   tree->Branch("recTauGJangleDiff", &recTauGJangleDiff, "recTauGJangleDiff/F");
-   tree->Branch("recTauGJangleMeasured", &recTauGJangleMeasured, "recTauGJangleMeasured/F");
+   tree->Branch("thetaGJ", &thetaGJ, "thetaGJ/F");
+   tree->Branch("thetaGJmax", &thetaGJmax, "thetaGJmax/F");
    tree->Branch("pt", &pt, "pt/F");
    tree->Branch("eta", &eta, "eta/F");
    tree->Branch("dxy", &dxy, "dxy/F");
@@ -109,6 +116,8 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("isolationGammaCands_size", &isolationGammaCands_size, "isolationGammaCands_size/I");
    tree->Branch("signalGammaCands_size_0p5", &signalGammaCands_size_0p5, "signalGammaCands_size_0p5/I");
    tree->Branch("isolationGammaCands_size_0p5", &isolationGammaCands_size_0p5, "isolationGammaCands_size_0p5/I");
+   tree->Branch("signalChargedHadrCands_size", &signalChargedHadrCands_size, "signalChargedHadrCands_size/I");
+   tree->Branch("signalNeutrHadrCands_size", &signalNeutrHadrCands_size, "signalNeutrHadrCands_size/I");
    tree->Branch("ip3d", &ip3d, "ip3d/F");
    tree->Branch("ip3d_Sig", &ip3d_Sig, "ip3d_Sig/F");
    tree->Branch("hasSecondaryVertex", &hasSecondaryVertex, "hasSecondaryVertex/O");
@@ -123,8 +132,12 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("isoCands_deta", &isoCands_deta, "isoCands_deta/F");
    tree->Branch("isoCands_dphi", &isoCands_dphi, "isoCands_dphi/F");
 
+   tree->Branch("hcalEnergyLeadChargedHadrCand", &hcalEnergyLeadChargedHadrCand, "hcalEnergyLeadChargedHadrCand/F");
+   tree->Branch("ecalEnergyLeadChargedHadrCand", &ecalEnergyLeadChargedHadrCand, "ecalEnergyLeadChargedHadrCand/F");
+
    tree->Branch("ecalEnergy", &ecalEnergy, "ecalEnergy/F");
    tree->Branch("hcalEnergy", &hcalEnergy, "hcalEnergy/F");
+   tree->Branch("eRatio", &eRatio, "eRatio/F");
    tree->Branch("leadingTrackNormChi2", &leadingTrackNormChi2 , "leadingTrackNormChi2/F");
 
    tree->Branch("iso_run2017v2", iso_run2017v2, "iso_run2017v2[8]/F");
@@ -137,6 +150,11 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("drmin_mu", &drmin_mu, "drmin_mu/F");
    tree->Branch("drmin_tau", &drmin_tau, "drmin_tau/F");
    tree->Branch("drmin_b", &drmin_b, "drmin_b/F");
+
+   tree->Branch("Z_dm", &Z_dm, "Z_dm/I");
+   tree->Branch("Wplus_dm", &Wplus_dm, "Wplus_dm/I");
+   tree->Branch("Wminus_dm", &Wminus_dm, "Wminus_dm/I");
+   tree->Branch("H_dm", &H_dm, "H_dm/I");
 
    tree->Branch("nVertices", &nVertices, "nVertices/I");
    tree->Branch("nTaus_gen", &nTaus_gen, "nTaus_gen/I");
@@ -176,11 +194,20 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
    iEvent.getByToken(genVisTauToken_, genVisTaus);
 
    nTaus_gen = 0;
+   Z_dm = Wplus_dm = Wminus_dm = H_dm = 0;
    for (auto i = genParticles->begin(); i != genParticles->end(); ++i) {
+      if (i->mother()) {
+         const int mid = i->mother()->pdgId();
+         if (mid==23) Z_dm = std::abs(i->pdgId());
+         if (mid==-24) Wminus_dm = std::abs(i->pdgId());
+         if (mid==24) Wplus_dm = std::abs(i->pdgId());
+         if (mid==25) H_dm = std::abs(i->pdgId()); 
+      }
       if (i->isLastCopy()) {
          if (std::abs(i->pdgId())==15) ++nTaus_gen;
       }
    }
+   
 
    edm::Handle<std::vector<reco::Vertex>> vertices;
    iEvent.getByToken(vertexToken_, vertices);
@@ -219,7 +246,10 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
             if (id==15 && dr<drmin_tau) drmin_tau = dr;
          }
       }
-  
+ 
+      hcalEnergyLeadChargedHadrCand = i->hcalEnergyLeadChargedHadrCand();
+      ecalEnergyLeadChargedHadrCand = i->ecalEnergyLeadChargedHadrCand();
+ 
       leadChargedHadrCand_dxy = leadChargedHadrCand_dxysig = -999.;
       if (i->leadChargedHadrCand().isNonnull()) {
          if (i->leadChargedHadrCand()->bestTrack()) {
@@ -244,13 +274,15 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       photonPtSumOutsideSignalCone = i->tauID("photonPtSumOutsideSignalCone");
       signalGammaCands_size = i->signalGammaCands().size();
       isolationGammaCands_size = i->isolationGammaCands().size();
+      signalChargedHadrCands_size = i->signalChargedHadrCands().size();
+      signalNeutrHadrCands_size = i->signalNeutrHadrCands().size();
 
       signalGammaCands_size_0p5 = 0;
-      for (auto j = i->signalGammaCands().begin(); j !=  i->signalGammaCands().end(); ++j) {
+      for (auto j = i->signalGammaCands().begin(); j != i->signalGammaCands().end(); ++j) {
          if ((*j)->pt()>=0.5) ++signalGammaCands_size_0p5;
       }
       isolationGammaCands_size_0p5 = 0;
-      for (auto j = i->isolationGammaCands().begin(); j !=  i->isolationGammaCands().end(); ++j) {
+      for (auto j = i->isolationGammaCands().begin(); j != i->isolationGammaCands().end(); ++j) {
          if ((*j)->pt()>=0.5) ++isolationGammaCands_size_0p5;
       }
 
@@ -262,25 +294,31 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       flightLengthSig = i->flightLengthSig();
       hasSecondaryVertex = i->hasSecondaryVertex();
       ecalEnergy = i->ecalEnergy();
-      hcalEnergy = i->hcalEnergy(); 
+      hcalEnergy = i->hcalEnergy();
+      if (ecalEnergy+hcalEnergy>0.) {
+         eRatio = ecalEnergy/(ecalEnergy+hcalEnergy);
+      } else {
+         eRatio = -1.;
+      }
       leadingTrackNormChi2 = i->leadingTrackNormChi2();
 
+      thetaGJmax = thetaGJ = -4.;
       if (i->decayMode()==10) {
-         // calculate difference between maximally allowed Gottfried-Jackson angle (angle between tau and a1 momentum)
-         // and measured Gottfried-Jackson angle from flightlength vector and tau momentum
-         // thetaGJmax = arcsin( ( m_tau^2 - m_a1^2) / ( 2 * m_tau * mag(p_a1) ))
-         // thetaGJmeasured is simply the angle between the flightLength vector and the tau momentum
-         double mTau = 1.77682;
-         double mAOne = i->p4().M();
-         double flightLengthMag = i->flightLength().Mag2();
-         double pAOneMag = i->p();
-         double thetaGJmax = TMath::ASin( (TMath::Power(mTau,2) - TMath::Power(mAOne,2)) / ( 2 * mTau * pAOneMag) );
-         double thetaGJmeasured = TMath::ACos( ( i->p4().px() * i->flightLength().x() + i->p4().py() * i->flightLength().y() + i->p4().pz() * i->flightLength().z()) / ( pAOneMag * TMath::Sqrt(flightLengthMag)) );
-         recTauGJangleMeasured = thetaGJmeasured;
-         recTauGJangleDiff = thetaGJmeasured - thetaGJmax;
-      } else {
-         recTauGJangleMeasured = -999.;
-         recTauGJangleDiff = -999.;
+         const float mTau = 1.77686;
+         const float  mAOne = i->p4().M();
+         const float  pAOneMag = i->p();
+         thetaGJmax = (mTau*mTau - mAOne*mAOne) / ( 2. * mTau * pAOneMag);
+         thetaGJmax = asin(thetaGJmax);
+         const float flightLengthMag = sqrt(i->flightLength().Mag2());
+         if (flightLengthMag>0.) {
+            thetaGJ = (i->px()*i->flightLength().x() + i->py()*i->flightLength().y() + i->pz()*i->flightLength().z()) / (pAOneMag * flightLengthMag);
+            //if (thetaGJ<0.) {
+               std::cout << "thetaGJ " << thetaGJ << std::endl;
+               std::cout << "px " << i->px() << " py " << i->py() << " pz " << i->pz() << std::endl;
+               std::cout << "vx " << i->flightLength().x() << " vy " << i->flightLength().y() << " vz " << i->flightLength().z() << std::endl;
+            //}
+            thetaGJ = acos(thetaGJ);
+         }
       }
 
       float sigCands_pt = 0.;
@@ -300,7 +338,7 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
          sigCands_deta = sigCands_deta / sigCands_pt;
          sigCands_dphi = sigCands_dphi / sigCands_pt;
       } else {
-         sigCands_dr = sigCands_deta = sigCands_dphi = -999.;
+         sigCands_dr = sigCands_deta = sigCands_dphi = -0.1;
       }
 
       float isoCands_pt = 0.;
@@ -320,7 +358,7 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
          isoCands_deta = isoCands_deta / isoCands_pt;
          isoCands_dphi = isoCands_dphi / isoCands_pt;
       } else {
-         isoCands_dr = isoCands_deta = isoCands_dphi = -999.;
+         isoCands_dr = isoCands_deta = isoCands_dphi = -0.1;
       }
 
       for (int j = 0; j < 8; ++j) {

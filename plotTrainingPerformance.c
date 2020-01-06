@@ -30,7 +30,7 @@ TGraphErrors * runPointROC(const TString tagger)
    const TCut sigcut = "drmin_tau_tau<0.4";
 
    TChain *c_bkg =  new TChain("skimmedTree");
-   c_bkg->Add("./outputData/skim_QCD_Flat_Pt-15to7000.root");
+   c_bkg->Add("./outputData/skim_QCD_Flat.root");
    const TCut bkgcut = "drmin_tau_tau>=0.4";
 
    double x[nwp], y[nwp];
@@ -104,7 +104,7 @@ TCanvas * plotROC(const TCut ptcut, const TCut pttag)
    return c;
 }
 
-void plotROCInclusive()
+TCanvas * plotROCInclusive()
 {
    TFile * f = TFile::Open("./TMVA.root");
    TH1D* h_test = (TH1D*)f->Get("dataset/Method_BDT/BDT/MVA_BDT_effBvsS");
@@ -161,6 +161,7 @@ void plotROCInclusive()
    l2->Draw();
 
    c->SaveAs("./plots/roc.pdf");
+   return c;
 }
 
 void plotMVA()

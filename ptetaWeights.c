@@ -23,7 +23,7 @@ void addWeights()
    TH1D * w_eta_temp = (TH1D*)w_eta->Clone("w_eta_temp");
    TH2D * w_pteta_temp = (TH2D*)w_pteta->Clone("w_pteta_temp");
 
-   TFile * f = TFile::Open("./outputData/skim_QCD_Flat_Pt-15to7000.root", "UPDATE");
+   TFile * f = TFile::Open("./outputData/skim_QCD_Flat.root", "UPDATE");
    TTree * t = (TTree*)f->Get("skimmedTree");
    
    float ptWeight = 0.;
@@ -148,9 +148,9 @@ void makeWeights()
    h_eta->Sumw2();
    
    const int n2_pt = 11;
-   const double x2_pt[n2_pt+1] = {20., 30., 40., 50., 60., 70., 80., 90., 100., 110., 120., 220.};
+   const double x2_pt[n2_pt+1] = {20., 30., 40., 50., 60., 70., 80., 90., 100., 120., 140., 220.};
    const int n2_eta = 3;
-   const double x2_eta[n2_eta+1] = {0., 0.75, 1.5, 3.};
+   const double x2_eta[n2_eta+1] = {0., 1.5, 2.3, 3.};
    TH2D * h_pteta = new TH2D("h_pteta", ";|#eta|;p_{T} [GeV]", n2_eta, x2_eta, n2_pt, x2_pt);
    h_pteta->Sumw2();
 
@@ -163,7 +163,7 @@ void makeWeights()
    TH2D * h_pteta_bkg = (TH2D*)h_pteta->Clone("h_pteta_bkg");
 
    const TCut sigcut = "drmin_tau_tau<0.4";
-   const TCut bkgcut = "1>0";
+   const TCut bkgcut = "drmin_tau_tau>=0.4";
 
    TChain * c_sig = new TChain("skimmedTree");
    c_sig->Add("./outputData/skim_WToLNu_2J.root");
@@ -179,7 +179,7 @@ void makeWeights()
    c_sig->Project("h_pteta_sig", "pt:TMath::Abs(eta)", sigcut);
 
    TChain * c_bkg = new TChain("skimmedTree");
-   c_bkg->Add("./outputData/skim_QCD_Flat_Pt-15to7000.root");
+   c_bkg->Add("./outputData/skim_QCD_Flat.root");
    const int n_bkg = c_bkg->GetEntries(bkgcut);
    std::cout << "number of background entries: " << n_bkg << std::endl;
 

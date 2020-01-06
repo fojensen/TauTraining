@@ -4,7 +4,7 @@ data = {}
 data['people'] = []
 
 data['people'].append({
-   'name': 'QCD_Flat_Pt-15to7000',
+   'name': 'QCD_Flat',
    'das': '/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/PhaseIISpr18AODMiniAOD-PU200_93X_upgrade2023_realistic_v5-v1/MINIAODSIM',
    'globalTag': '93X_upgrade2023_realistic_v5',
    'xs': '1.',
@@ -12,7 +12,7 @@ data['people'].append({
    'nFiles': '803',
 })
 data['people'].append({
-   'name': 'QCD_Flat_Pt-15to7000_Run2',
+   'name': 'QCD_Flat_Run2',
    'das': '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v1/MINIAODSIM',
    'globalTag': '102X_upgrade2018_realistic_v15',
    'xs': '1.',
@@ -51,6 +51,14 @@ data['people'].append({
    'nEvents': '91120',
    'nFiles': '12',
 })
+#data['people'].append({
+#   'name': "GluGluHToTauTau_Run2",
+#   'das': '/GluGluHToTauTau_M125_13TeV_powheg_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v2/MINIAODSIM',
+#   'globalTag': '102X_upgrade2018_realistic_v15',
+#   'xs': '28.0525',
+#   'nEvents': '12575000',
+#   'nFiles': '188',
+#})
 data['people'].append({
    'name': 'VBFHToTauTau',
    'das': '/VBFHToTauTau_M125_14TeV_powheg_pythia8/PhaseIISpr18AODMiniAOD-PU200_93X_upgrade2023_realistic_v5-v1/MINIAODSIM',

@@ -50,9 +50,10 @@ process.tauAnalyzer = cms.EDAnalyzer("TauAnalyzer",
 
 process.source = cms.Source("PoolSource",
    fileNames = cms.untracked.vstring(
-      "/store/mc/PhaseIISpr18AODMiniAOD/GluGluHToTauTau_M125_14TeV_powheg_pythia8/MINIAODSIM/PU200_93X_upgrade2023_realistic_v5-v1/20000/02AB313D-AA45-E811-A1B6-7CD30AB15C58.root"
+      #"/store/mc/PhaseIISpr18AODMiniAOD/GluGluHToTauTau_M125_14TeV_powheg_pythia8/MINIAODSIM/PU200_93X_upgrade2023_realistic_v5-v1/20000/02AB313D-AA45-E811-A1B6-7CD30AB15C58.root"
       #"/store/mc/PhaseIISpr18AODMiniAOD/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/MINIAODSIM/PU200_93X_upgrade2023_realistic_v5-v1/90000/FA267931-2E44-E811-B0F9-C4346BC80410.root"
-      #"/store/mc/PhaseIISpr18AODMiniAOD/WToLNu_2J_14TeV-madgraphMLM-pythia8/MINIAODSIM/PU200_93X_upgrade2023_realistic_v5-v1/90000/BA580DFF-2049-E811-B211-1CC1DE1CF44E.root"
+      "/store/mc/PhaseIISpr18AODMiniAOD/WToLNu_2J_14TeV-madgraphMLM-pythia8/MINIAODSIM/PU200_93X_upgrade2023_realistic_v5-v1/90000/BA580DFF-2049-E811-B211-1CC1DE1CF44E.root"
+#      "/store/mc/PhaseIISpr18AODMiniAOD/TTTo2L2Nu_TuneCUETP8M1_14TeV-powheg-pythia8/MINIAODSIM/PU200_93X_upgrade2023_realistic_v5-v1/90000/F438D389-8745-E811-8296-008CFAE45080.root" 
    )
 )
 
@@ -85,11 +86,11 @@ process.printTree = cms.EDAnalyzer("ParticleTreeDrawer",
 process.mypath = cms.Sequence(
    process.goodVertices
    * process.eventAnalyzer
-   #* process.printTree
    * process.genVisTaus
    * process.rerunMvaIsolationSequence
    * getattr(process,updatedTauName)
    * process.tauAnalyzer
+   #process.printTree
 )
 
 process.p = cms.Path(process.mypath)
