@@ -30,41 +30,40 @@ void runPoint(TH1D * htemp, const TString var, const bool dolog=false)
 {
    std::cout << "plotting: " << var << std::endl;
 
-   const int n = 4;
+   const int n = 8;
    TString filetag[n];
    TCut cuts[n];
 
-   TCut baseline = "1>0";
-   baseline = baseline && TCut("hcalEnergy==0."); 
+   const TCut baseline = "1>0";
 
-   filetag[0] = "QCD_Flat_Run2";     cuts[0] = "drmin_tau_tau>=0.4";
-   filetag[1] = "VBFHToTauTau_Run2"; cuts[1] = "drmin_tau_tau<0.4";
-   filetag[2] = "QCD_Flat";          cuts[2] = "drmin_tau_tau>=0.4";
-   filetag[3] = "VBFHToTauTau";      cuts[3] = "drmin_tau_tau<0.4";
-
-   TString legendtag[4];
-   legendtag[0] = "QCD Flat; Run2";
-   legendtag[1] = "VBF H; Run2";
-   legendtag[2] = "QCD Flat; Phase2";
-   legendtag[3] = "VBF H; Phase2";
+   //filetag[0] = "QCD_Flat_Run2";     cuts[0] = "drmin_tau_tau>=0.4";
+   //filetag[1] = "VBFHToTauTau_Run2"; cuts[1] = "drmin_tau_tau<0.4";
+   //filetag[2] = "QCD_Flat";          cuts[2] = "drmin_tau_tau>=0.4";
+   //filetag[3] = "VBFHToTauTau";      cuts[3] = "drmin_tau_tau<0.4";
+   //TString legendtag[4];
+   //legendtag[0] = "QCD Flat; Run2";
+   //legendtag[1] = "VBF H; Run2";
+   //legendtag[2] = "QCD Flat; Phase2";
+   //legendtag[3] = "VBF H; Phase2";
    
-/*   filetag[0] = "QCD_Flat";          cuts[0] = "drmin_tau_tau>=0.4";
+   filetag[0] = "QCD_Flat";          cuts[0] = "drmin_tau_tau>=0.4";
    filetag[1] = "WToLNu_2J";         cuts[1] = "drmin_tau_tau<0.4";
    filetag[2] = "DYToLL-M-50_2J";    cuts[2] = "drmin_tau_tau<0.4";
    filetag[3] = "TTTo2L2Nu";         cuts[3] = "drmin_tau_tau<0.4";
    filetag[4] = "GluGluHToTauTau";   cuts[4] = "drmin_tau_tau<0.4";
    filetag[5] = "VBFHToTauTau";      cuts[5] = "drmin_tau_tau<0.4";
-   filetag[6] = "VBFHToTauTau_Run2"; cuts[6] = "drmin_tau_tau<0.4";*/
+   filetag[6] = "VBFHToTauTau_Run2"; cuts[6] = "drmin_tau_tau<0.4";
+   filetag[7] = "QCD_Flat_Run2";     cuts[7] = "drmin_tau_tau>=0.4";
 
    TH1D * h[n];
    for (int i = 0; i < n; ++i) {
       const TString hname = TString(htemp->GetName())+"_"+TString::Itoa(i, 10);
       h[i] = (TH1D*)htemp->Clone(hname);
-      //TChain chain("skimmedTree");
-      TChain chain("tauAnalyzer/tree");
+      TChain chain("skimmedTree");
+      //TChain chain("tauAnalyzer/tree");
       char buffer[100];
-      //sprintf(buffer, "./outputData/skim_%s.root", filetag[i].Data()); 
-      sprintf(buffer, "./outputData/%s.root", filetag[i].Data());
+      sprintf(buffer, "./outputData/skim_%s.root", filetag[i].Data()); 
+      //sprintf(buffer, "./outputData/%s.root", filetag[i].Data());
       chain.Add(buffer);
       if (chain.GetEntries()) {
          const double nentries = chain.Project(hname, var, cuts[i] && baseline);
@@ -76,8 +75,10 @@ void runPoint(TH1D * htemp, const TString var, const bool dolog=false)
          h[i]->SetLineColor(i+1);
       }
    }
-//   h[4]->SetLineColor(9);
- //  h[6]->SetLineWidth(1);  
+   h[6]->SetLineWidth(1);
+   h[7]->SetLineWidth(1);
+   h[6]->SetLineStyle(2);   
+   h[7]->SetLineStyle(2);
 
    TCanvas * canvas = new TCanvas("canvas_"+var, var, 400, 400);
    double max = 0.;
@@ -100,7 +101,7 @@ void runPoint(TH1D * htemp, const TString var, const bool dolog=false)
    l->SetBorderSize(0);
    l->SetNColumns(2);
    for (int i = 0; i < n; ++i) {
-      l->AddEntry(h[i], legendtag[i], "L");
+      l->AddEntry(h[i], filetag[i], "L");
    }
    l->Draw();
 
@@ -112,13 +113,14 @@ void runPoint(TH1D * htemp, const TString var, const bool dolog=false)
 
 void plotTrainingVariables()
 {
-//   TH1D h_pt("h_pt", ";pt;#tau_{h} candidates / 10 GeV", 20, 20., 220.);
-  // runPoint(&h_pt, "pt", true);
+   TH1D h_pt("h_pt", ";pt;#tau_{h} candidates / 10 GeV", 20, 20., 220.);
+   runPoint(&h_pt, "pt", true);
 
    TH1D h_eta("h_eta", ";TMath::Abs(eta);#tau_{h} candidates / 0.1", 30, 0., 3.);
    runPoint(&h_eta, "TMath::Abs(eta)", false);
 
-  /* TH1D h_chargedIsoPtSum("h_chargedIsoPtSum", ";chargedIsoPtSum;#tau_{h} candidates / 1 GeV", 20, 0., 250.);
+   /*
+   TH1D h_chargedIsoPtSum("h_chargedIsoPtSum", ";chargedIsoPtSum;#tau_{h} candidates / 1 GeV", 20, 0., 250.);
    runPoint(&h_chargedIsoPtSum, "chargedIsoPtSum", true);
 
    TH1D h_neutralIsoPtSum("h_neutralIsoPtSum", ";neutralIsoPtSum;#tau_{h} candidates / 1 GeV", 20, 0., 250.);
@@ -183,8 +185,9 @@ void plotTrainingVariables()
 
    TH1D h_flightLengthSig("h_flightLengthSig", ";flightLengthSig;#tau_{h} candidates / bin", 20, -1., 100.);
    runPoint(&h_flightLengthSig, "flightLengthSig", true);
-*/
-//   TH1D h_recTauGJangleDiff("h_recTauGJangleDiff", ";recTauGJangleDiff;", 20, -2., 4.);
-  // runPoint(&h_recTauGJangleDiff, "recTauGJangleDiff", true); 
+
+   TH1D h_recTauGJangleDiff("h_recTauGJangleDiff", ";recTauGJangleDiff;", 20, -2., 4.);
+   runPoint(&h_recTauGJangleDiff, "recTauGJangleDiff", true);
+   */
 }
 

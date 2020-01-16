@@ -168,7 +168,7 @@ void makeWeights()
    TChain * c_sig = new TChain("skimmedTree");
    c_sig->Add("./outputData/skim_WToLNu_2J.root");
    c_sig->Add("./outputData/skim_DYToLL-M-50_2J.root");
-   //c_sig->Add("./outputData/skim_TTTo2L2Nu.root");
+   c_sig->Add("./outputData/skim_TTTo2L2Nu.root");
    c_sig->Add("./outputData/skim_GluGluHToTauTau.root");
    c_sig->Add("./outputData/skim_VBFHToTauTau.root");
    const int n_sig = c_sig->GetEntries(sigcut);

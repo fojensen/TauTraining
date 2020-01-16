@@ -10,7 +10,7 @@
 #include <TTree.h>
 #include <TChain.h>
 
-TGraphErrors * runPointROC(const TString tagger)
+/*TGraphErrors * runPointROC(const TString tagger)
 {
    std::cout << "Running " << tagger << std::endl;
    int nwp_ = 1;
@@ -71,8 +71,8 @@ TGraphErrors * runPointROC(const TString tagger)
   
    return g; 
 }
-
-TCanvas * plotROC(const TCut ptcut, const TCut pttag)
+*/
+TGraphErrors * plotROC(const TCut cut, const TCut tag)
 {
    TFile * f = TFile::Open("./TMVA.root");
    TTree * tree = (TTree*)f->Get("dataset/TestTree");
@@ -81,8 +81,8 @@ TCanvas * plotROC(const TCut ptcut, const TCut pttag)
    
    TH1D * h_sig = new TH1D("h_sig", "", 100, -1., 1.);
    TH1D * h_bkg = (TH1D*)h_sig->Clone("h_bkg");
-   const double n_sig = tree->Project("h_sig", "BDT", sigcut && ptcut);
-   const double n_bkg = tree->Project("h_bkg", "BDT", bkgcut && ptcut);
+   const double n_sig = tree->Project("h_sig", "BDT", cut && sigcut);
+   const double n_bkg = tree->Project("h_bkg", "BDT", cut && bkgcut);
 
    TGraphErrors * g_roc = new TGraphErrors(100);
    for (int i = 0; i < 100; ++i) {
@@ -91,17 +91,19 @@ TCanvas * plotROC(const TCut ptcut, const TCut pttag)
       g_roc->SetPoint(i, eff_sig, eff_bkg);
       g_roc->SetPointError(i, 0., 0.);
    }
+   g_roc->SetName("");
+   g_roc->SetTitle(";signal efficiency;background efficiency");
 
-   TCanvas * c = new TCanvas("c_"+pttag, pttag, 400, 400);
+   //TCanvas * c = new TCanvas("c_"+tag, tag, 400, 400);
    g_roc->SetMarkerStyle(20);
-   g_roc->Draw("APE");
-   g_roc->GetXaxis()->SetRangeUser(0., 1.);
-   g_roc->Draw("APE");
-   c->Update();   
-   g_roc->SetMaximum(1.);
-   g_roc->SetMinimum(1e-4);
-   c->SetLogy();
-   return c;
+   //g_roc->Draw("APE");
+   //g_roc->GetXaxis()->SetRangeUser(0., 1.);
+   //g_roc->Draw("APE");
+   //c->Update();   
+   //g_roc->SetMaximum(1.);
+   //g_roc->SetMinimum(1e-4);
+   //c->SetLogy();
+   return g_roc;
 }
 
 TCanvas * plotROCInclusive()
@@ -145,7 +147,7 @@ TCanvas * plotROCInclusive()
    pt->AddText(buffer2);
    pt->Draw();
 
-   TGraphErrors * g_run2017v2 = runPointROC("run2017v2");
+   /*TGraphErrors * g_run2017v2 = runPointROC("run2017v2");
    TGraphErrors * g_deepTau2017v2p1 = runPointROC("deepTau2017v2p1");
    g_run2017v2->SetMarkerStyle(20);
    g_run2017v2->SetMarkerColor(8);
@@ -158,13 +160,13 @@ TCanvas * plotROCInclusive()
    l2->SetBorderSize(0);
    l2->AddEntry(g_run2017v2, "run2017v2", "P");
    l2->AddEntry(g_deepTau2017v2p1, "deepTau2017v2p1", "P");
-   l2->Draw();
+   l2->Draw();*/
 
    c->SaveAs("./plots/roc.pdf");
    return c;
 }
 
-void plotMVA()
+void plotMVAInclusive()
 {
    TFile * f = TFile::Open("./TMVA.root");
    TH1D *h_train_S = (TH1D*)f->Get("dataset/Method_BDT/BDT/MVA_BDT_Train_S");
@@ -209,7 +211,7 @@ void plotMVA()
    c->SaveAs("./plots/mva.pdf");
 }
 
-TGraphAsymmErrors* plotEff_runPoint(const TCut wp, const TCut sigbkg, const TString name, const TString var)
+/*TGraphAsymmErrors* plotEff_runPoint(const TCut wp, const TCut sigbkg, const TString name, const TString var)
 {
    TFile * f = TFile::Open("./TMVA.root");
    TTree * t = (TTree*)f->Get("dataset/TestTree");
@@ -304,12 +306,60 @@ void plotEff(const TString var)
    
    c->SaveAs("./plots/eff."+var+".pdf");
 }
-
+*/
 void plotTrainingPerformance()
 {
-   plotMVA();
+   plotMVAInclusive();
    plotROCInclusive();
-   plotEff("pt");
-   plotEff("eta");
+
+   const TCut loweta = "TMath::Abs(eta)<2.3";
+   const TCut higheta = "TMath::Abs(eta)>=2.3 && TMath::Abs(eta)<3.";
+   const TCut lowpt = "pt>=20. && pt<50.";
+   const TCut highpt = "pt>=50. && pt<220.";
+   //const TCut recocut = "decayModeFindingNewDMs>0.5 && pt>=20. && pt<220. && TMath::Abs(eta)<3.";
+   //const TCut gencut = "drmin_jet<0.4 && drmin_tau_e>=0.4 && drmin_tau_mu>=0.4";
+   //const TCut baseline = recocut && gencut;
+   const TCut baseline = "1>0";
+
+   TGraphErrors * g_lowetalowpt = plotROC(loweta&&lowpt&&baseline, "lowetalowpt");
+   TGraphErrors * g_lowetahighpt = plotROC(loweta&&highpt&&baseline, "lowetahighpt");
+   TGraphErrors * g_highetalowpt = plotROC(higheta&&lowpt&&baseline, "highetalowpt");
+   TGraphErrors * g_highetahighpt = plotROC(higheta&&highpt&&baseline, "highetahighpt");
+   TCanvas * c = new TCanvas("c", "c", 400, 400);
+
+   g_lowetalowpt->SetMarkerColor(6);
+   g_lowetalowpt->Draw("APE");
+   g_lowetalowpt->SetMinimum(0.0001);
+   g_lowetalowpt->SetMaximum(1.);
+   g_lowetalowpt->GetXaxis()->SetRangeUser(0., 1.);
+   g_lowetalowpt->Draw("APE");
+   c->Update();
+   c->SetLogy();
+   g_lowetahighpt->SetMarkerColor(7);
+   g_lowetahighpt->Draw("PE, SAME");
+   g_highetalowpt->SetMarkerColor(8);
+   g_highetalowpt->Draw("PE, SAME");
+   g_highetahighpt->SetMarkerColor(9);
+   g_highetahighpt->Draw("PE, SAME");
+
+   TLegend * l = new TLegend(0.4, 0.175, 0.825, 0.3);
+   l->SetNColumns(2);
+   l->SetBorderSize(0);
+   l->AddEntry(g_lowetalowpt, "|#eta|<2.3; p_{T}<50", "P");
+   l->AddEntry(g_lowetahighpt, "|#eta|<2.3; p_{T}>50", "P");
+   l->AddEntry(g_highetalowpt, "|#eta|>2.3; p_{T}<50", "P");
+   l->AddEntry(g_highetahighpt, "|#eta|>2.3; p_{T}>50", "P");
+   l->Draw();
+
+   c->SaveAs("./plots/trainingrocs.pdf");
+
+/*   plotEff("pt", loweta && baseline, "pt_loweta");
+   plotEff("pt", higheta && baseline, "pt_higheta");
+   plotEff("eta", lowpt && baseline, "eta_lowpt");
+   plotEff("eta", highpt && baseline, "eta_highpt");
+   plotEff("getPU_NumInteractions", loweta && lowpt && baseline, "pu_lowetalowpt");
+   plotEff("getPU_NumInteractions", loweta && lowpt && baseline, "pu_lowetalowpt");
+   plotEff("getPU_NumInteractions", loweta && lowpt && baseline, "pu_lowetalowpt");
+   plotEff("getPU_NumInteractions", loweta && lowpt && baseline, "pu_lowetalowpt");*/    
 }
 

@@ -13,6 +13,7 @@
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
 class EventAnalyzer : public edm::EDAnalyzer {
 public:
@@ -23,10 +24,13 @@ private:
    edm::EDGetTokenT<std::vector<pat::Tau>> tauToken_;
    edm::EDGetTokenT<std::vector<reco::GenParticle>> genParticleToken_;
    edm::EDGetTokenT<std::vector<reco::Vertex>> vertexToken_;
+   edm::EDGetTokenT<std::vector<PileupSummaryInfo>> putokenmini;
    TTree * tree;
    int nElectrons_gen, nMuons_gen, nTaus_gen;
    int nTaus;
    int nVertices;
+   int getPU_NumInteractions;
+   int getTrueNumInteractions;
    int nQuarks, nGluons;
    int nQuarks23, nGluons23;
 };
@@ -36,6 +40,7 @@ EventAnalyzer::EventAnalyzer(const edm::ParameterSet& iConfig)
    tauToken_ = consumes<std::vector<pat::Tau>>(iConfig.getParameter<edm::InputTag>("tauCollection"));
    genParticleToken_ = consumes<std::vector<reco::GenParticle>>(iConfig.getParameter<edm::InputTag>("genParticleCollection"));
    vertexToken_ = consumes<std::vector<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("vertexCollection"));
+   putokenmini = consumes<std::vector<PileupSummaryInfo>>(edm::InputTag("slimmedAddPileupInfo"));
 
    edm::Service<TFileService> fs;
    tree = fs->make<TTree>("tree", "tree");
@@ -44,6 +49,8 @@ EventAnalyzer::EventAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("nTaus_gen", &nTaus_gen, "nTaus_gen/I");
    tree->Branch("nTaus", &nTaus, "nTaus/I");
    tree->Branch("nVertices", &nVertices, "nVertices/I");
+   tree->Branch("getTrueNumInteractions", &getTrueNumInteractions, "getTrueNumInteractions/I");
+   tree->Branch("getPU_NumInteractions", &getPU_NumInteractions, "getPU_NumInteractions/I");
    tree->Branch("nQuarks23", &nQuarks23, "nQuarks23/I");
    tree->Branch("nGluons23", &nGluons23, "nGluons23/I");
    tree->Branch("nQuarks", &nQuarks, "nQuarks/I");
@@ -77,6 +84,15 @@ void EventAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
    edm::Handle<std::vector<reco::Vertex>> vertices;
    iEvent.getByToken(vertexToken_, vertices);
    nVertices = vertices->size();
+
+   edm::Handle<std::vector <PileupSummaryInfo> > PupInfo;
+   iEvent.getByToken(putokenmini, PupInfo);
+   getTrueNumInteractions = getPU_NumInteractions = -1;
+   for (auto i = PupInfo->begin(); i != PupInfo->end(); ++i) {
+      if (i->getBunchCrossing()!=0) continue;
+      getTrueNumInteractions = i->getTrueNumInteractions();
+      getPU_NumInteractions = i->getPU_NumInteractions();
+   }
 
    nTaus = 0;
    edm::Handle<std::vector<pat::Tau>> taus;

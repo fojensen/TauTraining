@@ -213,5 +213,11 @@ void plotReferencePerformance()
    TH1D * h_eta = new TH1D("h_eta", ";|#eta|;", 12, 0., 3.);
    plotEff(h_eta, "TMath::Abs(eta)", lowpt && baseline, "eta_lowpt");
    plotEff(h_eta, "TMath::Abs(eta)", highpt && baseline, "eta_highpt");
+
+   TH1D * h_nPU = new TH1D("h_nPU", ";getPU_NumInteractions;", 10, -0.5, 99.5);
+   plotEff(h_nPU, "getPU_NumInteractions", lowpt && loweta && baseline, "lowptloweta");
+   plotEff(h_nPU, "getPU_NumInteractions", highpt && loweta && baseline, "highptloweta");
+   plotEff(h_nPU, "getPU_NumInteractions", lowpt && higheta && baseline, "lowpthigheta");
+   plotEff(h_nPU, "getPU_NumInteractions", highpt && higheta && baseline, "highpthigheta"); 
 }
 

@@ -11,11 +11,13 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include <TTree.h>
 #include "DataFormats/PatCandidates/interface/Tau.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
 class TauAnalyzer : public edm::EDAnalyzer {
 public:
@@ -25,11 +27,15 @@ private:
 
    edm::EDGetTokenT<std::vector<pat::Tau>> tauToken_;
    edm::EDGetTokenT<std::vector<reco::GenJet>> genJetToken_; 
+   edm::EDGetTokenT<std::vector<pat::Jet>> jetToken_;
    edm::EDGetTokenT<pat::CompositeCandidateCollection> genVisTauToken_;
    edm::EDGetTokenT<std::vector<reco::GenParticle>> genParticleToken_;
    edm::EDGetTokenT<std::vector<reco::Vertex>> vertexToken_;
+   edm::EDGetTokenT<std::vector<PileupSummaryInfo>> putokenmini;
+
    TTree * tree;
  
+   float byCombinedIsolationDeltaBetaCorrRaw3Hits;
    float thetaGJ;
    float thetaGJmax;
    float chargedIsoPtSum;
@@ -58,19 +64,27 @@ private:
    int signalGammaCands_size_0p5;
    int signalChargedHadrCands_size;
    int signalNeutrHadrCands_size;
+   int signalCands_size;
    float sigCands_dr;
    float sigCands_deta;
    float sigCands_dphi;
    float isoCands_dr;
    float isoCands_deta;
    float isoCands_dphi;
+   bool isPFTau;
 
    int Z_dm, Wplus_dm, Wminus_dm, H_dm;
+
+   int partonFlavour;
+   int hadronFlavour;
 
    float ecalEnergy;
    float hcalEnergy;
    float eRatio;
+   float emFraction;
    float leadingTrackNormChi2;
+
+float cb;
 
    TString labels_run2017v2[8];
    TString labels_deepTau2017v2p1[9];
@@ -86,16 +100,20 @@ private:
    float drmin_b;
 
    int nTaus_gen, nVertices;
+   int getPU_NumInteractions;
+   int getTrueNumInteractions;
 };
 
 TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
 {
    tauToken_ = consumes<std::vector<pat::Tau>>(iConfig.getParameter<edm::InputTag>("tauCollection"));
    genJetToken_ = consumes<std::vector<reco::GenJet>>(iConfig.getParameter<edm::InputTag>("genJetCollection"));
+   jetToken_ = consumes<std::vector<pat::Jet>>(iConfig.getParameter<edm::InputTag>("jetCollection"));
    genVisTauToken_ = consumes<pat::CompositeCandidateCollection>(iConfig.getParameter<edm::InputTag>("genVisTauCollection"));
    genParticleToken_ = consumes<std::vector<reco::GenParticle>>(iConfig.getParameter<edm::InputTag>("genParticleCollection"));
    vertexToken_ = consumes<std::vector<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("vertexCollection"));
-
+   putokenmini = consumes<std::vector<PileupSummaryInfo>>(edm::InputTag("slimmedAddPileupInfo"));
+   
    edm::Service<TFileService> fs;
    tree = fs->make<TTree>("tree", "tree");
 
@@ -112,6 +130,7 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("neutralIsoPtSum", &neutralIsoPtSum, "neutralIsoPtSum/F");
    tree->Branch("puCorrPtSum", &puCorrPtSum, "puCorrPtSum/F");
    tree->Branch("photonPtSumOutsideSignalCone", &photonPtSumOutsideSignalCone, "photonPtSumOutsideSignalCone/F");
+   tree->Branch("signalCands_size", &signalCands_size, "signalCands_size/I");
    tree->Branch("signalGammaCands_size", &signalGammaCands_size, "signalGammaCands_size/I");
    tree->Branch("isolationGammaCands_size", &isolationGammaCands_size, "isolationGammaCands_size/I");
    tree->Branch("signalGammaCands_size_0p5", &signalGammaCands_size_0p5, "signalGammaCands_size_0p5/I");
@@ -119,6 +138,7 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("signalChargedHadrCands_size", &signalChargedHadrCands_size, "signalChargedHadrCands_size/I");
    tree->Branch("signalNeutrHadrCands_size", &signalNeutrHadrCands_size, "signalNeutrHadrCands_size/I");
    tree->Branch("ip3d", &ip3d, "ip3d/F");
+   tree->Branch("byCombinedIsolationDeltaBetaCorrRaw3Hits", &byCombinedIsolationDeltaBetaCorrRaw3Hits, "byCombinedIsolationDeltaBetaCorrRaw3Hits/F");
    tree->Branch("ip3d_Sig", &ip3d_Sig, "ip3d_Sig/F");
    tree->Branch("hasSecondaryVertex", &hasSecondaryVertex, "hasSecondaryVertex/O");
    tree->Branch("flightLengthSig", &flightLengthSig, "flightLengthSig/F");
@@ -132,12 +152,15 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("isoCands_deta", &isoCands_deta, "isoCands_deta/F");
    tree->Branch("isoCands_dphi", &isoCands_dphi, "isoCands_dphi/F");
 
+   tree->Branch("isPFTau", &isPFTau, "isPFTau/O");
+
    tree->Branch("hcalEnergyLeadChargedHadrCand", &hcalEnergyLeadChargedHadrCand, "hcalEnergyLeadChargedHadrCand/F");
    tree->Branch("ecalEnergyLeadChargedHadrCand", &ecalEnergyLeadChargedHadrCand, "ecalEnergyLeadChargedHadrCand/F");
 
    tree->Branch("ecalEnergy", &ecalEnergy, "ecalEnergy/F");
    tree->Branch("hcalEnergy", &hcalEnergy, "hcalEnergy/F");
    tree->Branch("eRatio", &eRatio, "eRatio/F");
+   tree->Branch("emFraction", &emFraction, "emFraction/F");
    tree->Branch("leadingTrackNormChi2", &leadingTrackNormChi2 , "leadingTrackNormChi2/F");
 
    tree->Branch("iso_run2017v2", iso_run2017v2, "iso_run2017v2[8]/F");
@@ -157,7 +180,12 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
    tree->Branch("H_dm", &H_dm, "H_dm/I");
 
    tree->Branch("nVertices", &nVertices, "nVertices/I");
+   tree->Branch("getTrueNumInteractions", &getTrueNumInteractions, "getTrueNumInteractions/I");
+   tree->Branch("getPU_NumInteractions", &getPU_NumInteractions, "getPU_NumInteractions/I");
    tree->Branch("nTaus_gen", &nTaus_gen, "nTaus_gen/I");
+
+   tree->Branch("partonFlavour", &partonFlavour, "partonFlavour/I");
+   tree->Branch("hadronFlavour", &hadronFlavour, "hadronFlavour/I");
 
    labels_run2017v2[0] = "inclusive";
    labels_run2017v2[1] = "byVVLooseIsolationMVArun2017v2DBoldDMwLT2017";
@@ -181,6 +209,15 @@ TauAnalyzer::TauAnalyzer(const edm::ParameterSet& iConfig)
 
 void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+   edm::Handle<std::vector <PileupSummaryInfo> > PupInfo;
+   iEvent.getByToken(putokenmini, PupInfo);
+   getTrueNumInteractions = getPU_NumInteractions = -1;
+   for (auto i = PupInfo->begin(); i != PupInfo->end(); ++i) {
+      if (i->getBunchCrossing()!=0) continue;
+      getTrueNumInteractions = i->getTrueNumInteractions();
+      getPU_NumInteractions = i->getPU_NumInteractions();
+   }
+
    edm::Handle<std::vector<reco::GenParticle>> genParticles;
    iEvent.getByToken(genParticleToken_, genParticles);
 
@@ -189,6 +226,9 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
    edm::Handle<std::vector<reco::GenJet>> genJets;
    iEvent.getByToken(genJetToken_, genJets);
+
+   edm::Handle<std::vector<pat::Jet>> jets;
+   iEvent.getByToken(jetToken_, jets);
 
    edm::Handle<pat::CompositeCandidateCollection> genVisTaus;
    iEvent.getByToken(genVisTauToken_, genVisTaus);
@@ -234,6 +274,16 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       if (drmin_tau_e<0.4) continue;
       if (drmin_tau_mu<0.4) continue;
 
+      double tempdr = 9.;
+      partonFlavour = hadronFlavour = -999;
+      for (auto j = jets->begin(); j != jets->end(); ++j) {
+         if (reco::deltaR(*i, *j)<tempdr) {
+            partonFlavour = j->partonFlavour();
+            hadronFlavour = j->hadronFlavour();
+            tempdr = reco::deltaR(*i, *j);    
+         }
+      }
+
       drmin_e = drmin_mu = drmin_tau = 9.;
       drmin_b = 9.;
       for (auto j = genParticles->begin(); j != genParticles->end(); ++j) {
@@ -252,7 +302,9 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
  
       leadChargedHadrCand_dxy = leadChargedHadrCand_dxysig = -999.;
       if (i->leadChargedHadrCand().isNonnull()) {
+          leadChargedHadrCand_dxy = leadChargedHadrCand_dxysig = -998.;
          if (i->leadChargedHadrCand()->bestTrack()) {
+            leadChargedHadrCand_dxy = leadChargedHadrCand_dxysig = -997.;
             leadChargedHadrCand_dxy = i->leadChargedHadrCand()->bestTrack()->dxy();
             const float dxyError = i->leadChargedHadrCand()->bestTrack()->dxyError();
             if (dxyError>0.) {
@@ -260,8 +312,8 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
             }
          }
       }
-      if (std::isnan(leadChargedHadrCand_dxy)) leadChargedHadrCand_dxy = -998.;
-      if (std::isnan(leadChargedHadrCand_dxysig)) leadChargedHadrCand_dxysig = -998.;
+      if (std::isnan(leadChargedHadrCand_dxy)) leadChargedHadrCand_dxy = -996.;
+      if (std::isnan(leadChargedHadrCand_dxysig)) leadChargedHadrCand_dxysig = -995.;
 
       pt = i->pt();
       eta = i->eta();
@@ -272,10 +324,13 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       neutralIsoPtSum = i->tauID("neutralIsoPtSum");
       puCorrPtSum = i->tauID("puCorrPtSum"); 
       photonPtSumOutsideSignalCone = i->tauID("photonPtSumOutsideSignalCone");
+      signalCands_size = i->signalCands().size();
       signalGammaCands_size = i->signalGammaCands().size();
       isolationGammaCands_size = i->isolationGammaCands().size();
       signalChargedHadrCands_size = i->signalChargedHadrCands().size();
       signalNeutrHadrCands_size = i->signalNeutrHadrCands().size();
+   
+      byCombinedIsolationDeltaBetaCorrRaw3Hits = i->tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
 
       signalGammaCands_size_0p5 = 0;
       for (auto j = i->signalGammaCands().begin(); j != i->signalGammaCands().end(); ++j) {
@@ -302,6 +357,13 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       }
       leadingTrackNormChi2 = i->leadingTrackNormChi2();
 
+      isPFTau = i->isPFTau();
+      if (isPFTau) {
+         emFraction = i->emFraction();
+      } else {
+         emFraction = -1.;
+      }
+
       thetaGJmax = thetaGJ = -4.;
       if (i->decayMode()==10) {
          const float mTau = 1.77686;
@@ -313,9 +375,9 @@ void TauAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
          if (flightLengthMag>0.) {
             thetaGJ = (i->px()*i->flightLength().x() + i->py()*i->flightLength().y() + i->pz()*i->flightLength().z()) / (pAOneMag * flightLengthMag);
             //if (thetaGJ<0.) {
-               std::cout << "thetaGJ " << thetaGJ << std::endl;
-               std::cout << "px " << i->px() << " py " << i->py() << " pz " << i->pz() << std::endl;
-               std::cout << "vx " << i->flightLength().x() << " vy " << i->flightLength().y() << " vz " << i->flightLength().z() << std::endl;
+               //std::cout << "thetaGJ " << thetaGJ << std::endl;
+               //std::cout << "px " << i->px() << " py " << i->py() << " pz " << i->pz() << std::endl;
+               //std::cout << "vx " << i->flightLength().x() << " vy " << i->flightLength().y() << " vz " << i->flightLength().z() << std::endl;
             //}
             thetaGJ = acos(thetaGJ);
          }

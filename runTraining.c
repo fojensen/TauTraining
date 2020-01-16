@@ -15,11 +15,12 @@ void runTraining()
    TMVA::Factory *factory = new TMVA::Factory(theJobName, outputFile, optionTable_1);
 
    TMVA::DataLoader * loader = new TMVA::DataLoader("dataset");
-
+ 
    loader->AddVariable("pt");
    //loader->AddVariable("TMath::Log(TMath::Max(1., pt))");
 
    loader->AddVariable("TMath::Abs(eta)");
+   loader->AddSpectator("eta");
    
    loader->AddVariable("chargedIsoPtSum");
    //loader->AddVariable("TMath::Log(TMath::Max(1.e-2, chargedIsoPtSum))");
@@ -68,7 +69,7 @@ void runTraining()
    loader->AddVariable("flightLengthSig");
    //loader->AddVariable("TMath::Min(10., flightLengthSig)");
    
-   loader->AddVariable("recTauGJangleDiff");
+   //loader->AddVariable("GJangle");
    //loader->AddVariable("TMath::Max(-1.,recTauGJangleDiff)");
  
    TFile *input_sig1 = TFile::Open("./outputData/skim_WToLNu_2J.root");
@@ -79,9 +80,9 @@ void runTraining()
    TTree * sigTree2 = (TTree*)input_sig2->Get("skimmedTree");
    loader->AddSignalTree(sigTree2);
 
-   //TFile *input_sig3 = TFile::Open("./outputData/skim_TTTo2L2Nu.root");
-   //TTree * sigTree3 = (TTree*)input_sig3->Get("skimmedTree");
-   //loader->AddSignalTree(sigTree3);
+   TFile *input_sig3 = TFile::Open("./outputData/skim_TTTo2L2Nu.root");
+   TTree * sigTree3 = (TTree*)input_sig3->Get("skimmedTree");
+   loader->AddSignalTree(sigTree3);
 
    TFile *input_sig4 = TFile::Open("./outputData/skim_GluGluHToTauTau.root");
    TTree * sigTree4 = (TTree*)input_sig4->Get("skimmedTree");

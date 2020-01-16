@@ -51,10 +51,10 @@ void makeSkim(const TString fileTag, const TCut genTauCut, const int cap=0)
 
 void makeSkims()
 {
-   makeSkim("WToLNu_2J", "nTaus_gen==1", 100000);
+   makeSkim("GluGluHToTauTau", "nTaus_gen==2", 100000);
    makeSkim("DYToLL-M-50_2J", "nTaus_gen==2", 100000);
    makeSkim("TTTo2L2Nu", "nTaus_gen==2", 100000);
-   makeSkim("GluGluHToTauTau", "nTaus_gen==2", 100000);
+   makeSkim("WToLNu_2J", "nTaus_gen==1", 100000);
    makeSkim("VBFHToTauTau", "nTaus_gen==2", 100000);
    makeSkim("QCD_Flat", "nTaus_gen==0", 1000000);
    makeSkim("VBFHToTauTau_Run2", "nTaus_gen==2", 100000);
